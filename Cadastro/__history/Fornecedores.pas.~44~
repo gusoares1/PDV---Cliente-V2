@@ -1,0 +1,224 @@
+unit Fornecedores;
+
+interface
+
+uses
+  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
+  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Data.DB, Vcl.StdCtrls, Vcl.Grids,
+  Vcl.DBGrids, Vcl.Mask, Vcl.Buttons;
+
+type
+  TfrmFornecedores = class(TForm)
+    Label1: TLabel;
+    Label2: TLabel;
+    Label3: TLabel;
+    Label5: TLabel;
+    btnNovo: TSpeedButton;
+    btnSalvar: TSpeedButton;
+    btnEditar: TSpeedButton;
+    btnExcluir: TSpeedButton;
+    EdtBuscarNome: TEdit;
+    EdtNome: TEdit;
+    EdtEndereco: TEdit;
+    EdtTelefone: TMaskEdit;
+    DBGrid1: TDBGrid;
+    Label6: TLabel;
+    EdtProduto: TEdit;
+    procedure btnNovoClick(Sender: TObject);
+    procedure btnSalvarClick(Sender: TObject);
+    procedure FormShow(Sender: TObject);
+    procedure btnEditarClick(Sender: TObject);
+    procedure DBGrid1CellClick(Column: TColumn);
+    procedure btnExcluirClick(Sender: TObject);
+    procedure EdtBuscarNomeChange(Sender: TObject);
+  private
+    procedure limpar;
+    procedure habilitarCampos;
+    procedure desabilitarCampos;
+
+    procedure associarCampos;
+    procedure listar;
+
+    procedure buscarNome;
+  public
+    { Public declarations }
+  end;
+
+var
+  frmFornecedores: TfrmFornecedores;
+  id : string;
+
+implementation
+
+{$R *.dfm}
+
+uses Modulo;
+
+{ TfrmFornecedores }
+
+procedure TfrmFornecedores.associarCampos;
+begin
+  dm.tb_fornecedor.FieldByName('nome').value :=edtnome.Text;
+  dm.tb_fornecedor.FieldByName('produto').value :=EdtProduto.Text;
+  dm.tb_fornecedor.FieldByName('telefone').value :=EdtTelefone.Text;
+  dm.tb_fornecedor.FieldByName('endereco').value :=EdtEndereco.Text;
+  dm.tb_fornecedor.FieldByName('data').value :=DateToStr(date);
+end;
+
+procedure TfrmFornecedores.btnEditarClick(Sender: TObject);
+begin
+  if Trim(EdtNome.Text) = '' then
+    begin
+        MessageDlg('Preencha o Nome', TMsgDlgType.mtInformation, mbOKCancel, 0);
+        EdtNome.SetFocus;
+        exit;
+    end;
+
+  associarCampos;
+  dm.query_fornecedores.close;
+  dm.query_fornecedores.sql.Clear;
+  dm.query_fornecedores.sql.add('UPDATE fornecedores set nome = :nome, produto = :produto, endereco = :endereco, telefone = :telefone where id = :id');
+  dm.query_fornecedores.ParamByName('nome').Value := edtNome.Text;
+  dm.query_fornecedores.ParamByName('produto').Value := EdtProduto.Text;
+  dm.query_fornecedores.ParamByName('endereco').Value := edtendereco.Text;
+  dm.query_fornecedores.ParamByName('telefone').Value := edttelefone.Text;
+  dm.query_fornecedores.ParamByName('id').Value := id;
+  dm.query_fornecedores.ExecSQL;
+
+  btnEditar.Enabled := false;
+  btnExcluir.Enabled := false;
+  limpar;
+  desabilitarCampos;
+  listar;
+  MessageDlg('Editado com sucesso!', TMsgDlgType.mtInformation, mbOKCancel, 0);
+
+end;
+
+procedure TfrmFornecedores.btnExcluirClick(Sender: TObject);
+begin
+    if MessageDlg('Deseja Excluir o registro?', TMsgDlgType.mtConfirmation, [TMsgDlgBtn.mbYes, TMsgDlgBtn.mbNo], 0) = mrYes then
+    begin
+      associarCampos;
+      dm.query_fornecedores.close;
+      dm.query_fornecedores.sql.Clear;
+      dm.query_fornecedores.sql.add('DELETE FROM fornecedor WHERE id = :id');
+      dm.query_fornecedores.ParamByName('id').Value := id;
+      dm.query_fornecedores.ExecSQL;
+      MessageDlg('Deletado com sucesso', TMsgDlgType.mtInformation, mbOKCancel, 0);
+      btnEditar.Enabled := false;
+      btnExcluir.Enabled := false;
+      edtNome.Text := '';
+
+
+    end;
+
+    listar;
+
+end;
+
+procedure TfrmFornecedores.btnNovoClick(Sender: TObject);
+begin
+  dm.tb_fornecedor.Insert;
+  habilitarCampos;
+  btnSalvar.Enabled := true;
+end;
+
+procedure TfrmFornecedores.btnSalvarClick(Sender: TObject);
+begin
+if Trim(EdtProduto.Text) = '' then
+  begin
+      MessageDlg('Preencha o Produto', TMsgDlgType.mtInformation, mbOKCancel, 0);
+      EdtProduto.SetFocus;
+      exit;
+  end;
+
+      if Trim(EdtNome.Text) = '' then
+  begin
+      MessageDlg('Preencha o Nome', TMsgDlgType.mtInformation, mbOKCancel, 0);
+      EdtNome.SetFocus;
+      exit;
+  end;
+
+  associarCampos;
+  dm.tb_fornecedor.Post;
+  messageDlg('Salvo com sucesso',mtInformation,mbOKCancel,0);
+  limpar;
+  desabilitarCampos;
+  listar;
+end;
+
+procedure TfrmFornecedores.buscarNome;
+begin
+    // buscar forncedor pelo nome
+  dm.tb_fornecedor.sql.Clear;
+  dm.tb_fornecedor.sql.add('select * from fornecedores where nome like :nome');
+  dm.tb_fornecedor.ParamByName('nome').Value := EdtBuscarNome.Text + '%';
+  dm.tb_fornecedor.Open();
+end;
+
+procedure TfrmFornecedores.DBGrid1CellClick(Column: TColumn);
+begin
+     habilitarCampos;
+     btnEditar.Enabled := true;
+     btnExcluir.Enabled := true;
+     dm.tb_fornecedor.Edit;
+
+     EdtNome.Text :=dm.query_fornecedores.FieldByName('nome').value;
+
+     EdtProduto.Text :=dm.query_fornecedores.FieldByName('produto').value;
+
+     EdtTelefone.Text :=dm.query_fornecedores.FieldByName('telefone').value;
+
+     Edtendereco.Text :=dm.query_fornecedores.FieldByName('endereco').value;
+
+     id := dm.query_fornecedores.FieldByName('id').value;
+
+end;
+
+procedure TfrmFornecedores.desabilitarCampos;
+begin
+    EdtNome.Enabled := false;
+    EdtEndereco.Enabled := false;
+    EdtTelefone.Enabled := false;
+    EdtProduto.Enabled := false;
+end;
+
+procedure TfrmFornecedores.EdtBuscarNomeChange(Sender: TObject);
+begin
+buscarNome;
+end;
+
+procedure TfrmFornecedores.FormShow(Sender: TObject);
+begin
+     desabilitarCampos;
+     dm.tb_fornecedor.Active := true;
+     listar;
+end;
+
+procedure TfrmFornecedores.habilitarCampos;
+begin
+    EdtNome.Enabled := true;
+    EdtEndereco.Enabled := true;
+    EdtTelefone.Enabled := true;
+    EdtProduto.Enabled := true;
+end;
+
+procedure TfrmFornecedores.limpar;
+begin
+
+    EdtNome.text := '';
+    EdtEndereco.text := '';
+    EdtTelefone.text := '';
+    EdtProduto.text := '';
+
+end;
+
+procedure TfrmFornecedores.listar;
+begin
+  // listar Fornecedores
+  dm.query_fornecedores.sql.Clear;
+  dm.query_fornecedores.sql.add('select * from fornecedores');
+  dm.query_fornecedores.Open();
+end;
+
+end.

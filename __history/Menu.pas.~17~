@@ -1,0 +1,98 @@
+unit Menu;
+
+interface
+
+uses
+  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
+  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.Menus;
+
+type
+  TfrmMenu = class(TForm)
+    MainMenu1: TMainMenu;
+    Cadastros1: TMenuItem;
+    Agendamento1: TMenuItem;
+    Relatorios1: TMenuItem;
+    Sair1: TMenuItem;
+    Produtos1: TMenuItem;
+    fornecedores1: TMenuItem;
+    Usuarios1: TMenuItem;
+    Funcionarios1: TMenuItem;
+    Funcionarios2: TMenuItem;
+    Sair2: TMenuItem;
+    Cliente2: TMenuItem;
+    Agendamento2: TMenuItem;
+    procedure Usuarios1Click(Sender: TObject);
+    procedure Funcionarios1Click(Sender: TObject);
+    procedure Funcionarios2Click(Sender: TObject);
+    procedure FormShow(Sender: TObject);
+    procedure fornecedores1Click(Sender: TObject);
+    procedure Sair2Click(Sender: TObject);
+    procedure Agendamento2Click(Sender: TObject);
+    procedure Cliente2Click(Sender: TObject);
+  private
+    { Private declarations }
+  public
+    { Public declarations }
+  end;
+
+var
+  frmMenu: TfrmMenu;
+
+implementation
+
+{$R *.dfm}
+
+uses Usuarios, Funcionario, Cargos, Modulo, Fornecedores, login, Agendamento,
+  Cliente;
+
+procedure TfrmMenu.Agendamento2Click(Sender: TObject);
+begin
+    frmAgendamento :=TfrmAgendamento.Create(self);
+    frmAgendamento.ShowModal;
+end;
+
+procedure TfrmMenu.Cliente2Click(Sender: TObject);
+begin
+      FrmCliente := TFrmCliente.Create(self);
+      FrmCliente.ShowModal;
+end;
+
+procedure TfrmMenu.FormShow(Sender: TObject);
+begin
+     if (cargoUsuario = 'admin')  or (cargoUsuario = 'Gerente') then
+     Begin
+       Usuarios1.Enabled := true;
+     End;
+
+end;
+
+procedure TfrmMenu.Funcionarios1Click(Sender: TObject);
+begin
+  FrmFuncionarios := TFrmFuncionarios.Create(self);
+  FrmFuncionarios.ShowModal;
+end;
+
+procedure TfrmMenu.Funcionarios2Click(Sender: TObject);
+begin
+  FrmCargos := TFrmCargos.Create(self);
+  FrmCargos.ShowModal;
+end;
+
+procedure TfrmMenu.Sair2Click(Sender: TObject);
+begin
+close;
+end;
+
+procedure TfrmMenu.fornecedores1Click(Sender: TObject);
+begin
+  frmFornecedores := TfrmFornecedores.Create(self);
+  frmFornecedores.ShowModal;
+end;
+
+procedure TfrmMenu.Usuarios1Click(Sender: TObject);
+begin
+  FrmUsuario := TFrmUsuario.Create(self);
+  FrmUsuario.ShowModal;
+end;
+
+end.

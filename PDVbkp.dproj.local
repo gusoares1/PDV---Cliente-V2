@@ -1,0 +1,58 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<BorlandProject>
+	<Transactions>
+    <Transaction>2025/03/17 18:43:54.000.084,=C:\Users\Pichau\OneDrive\Documentos\Embarcadero\Studio\Projects\Unit2.pas</Transaction>
+    <Transaction>2025/03/18 13:03:37.000.490,=C:\Users\Pichau\OneDrive\Documentos\Embarcadero\Studio\Projects\Unit2.pas</Transaction>
+    <Transaction>2025/03/18 13:04:11.000.178,C:\Users\Pichau\OneDrive\Documentos\Embarcadero\Studio\Projects\PDV\login.pas=C:\Users\Pichau\OneDrive\Documentos\Embarcadero\Studio\Projects\Unit2.pas</Transaction>
+    <Transaction>2025/03/18 13:04:11.000.178,C:\Users\Pichau\OneDrive\Documentos\Embarcadero\Studio\Projects\PDV\login.dfm=C:\Users\Pichau\OneDrive\Documentos\Embarcadero\Studio\Projects\Unit2.dfm</Transaction>
+    <Transaction>2025/03/18 13:04:14.000.038,C:\Users\Pichau\OneDrive\Documentos\Embarcadero\Studio\Projects\PDV\PDV.dproj=C:\Users\Pichau\OneDrive\Documentos\Embarcadero\Studio\Projects\Project1.dproj</Transaction>
+    <Transaction>2025/03/18 14:15:05.000.193,=C:\Users\Pichau\OneDrive\Documentos\Embarcadero\Studio\Projects\PDV\Unit1.pas</Transaction>
+    <Transaction>2025/03/18 14:15:15.000.989,C:\Users\Pichau\OneDrive\Documentos\Embarcadero\Studio\Projects\PDV\Menu.pas=C:\Users\Pichau\OneDrive\Documentos\Embarcadero\Studio\Projects\PDV\Unit1.pas</Transaction>
+    <Transaction>2025/03/18 14:15:15.000.989,C:\Users\Pichau\OneDrive\Documentos\Embarcadero\Studio\Projects\PDV\Menu.dfm=C:\Users\Pichau\OneDrive\Documentos\Embarcadero\Studio\Projects\PDV\Unit1.dfm</Transaction>
+    <Transaction>2025/03/18 14:37:25.000.757,=C:\Users\Pichau\OneDrive\Documentos\Embarcadero\Studio\Projects\PDV\Unit1.pas</Transaction>
+    <Transaction>2025/03/18 14:37:34.000.954,C:\Users\Pichau\OneDrive\Documentos\Embarcadero\Studio\Projects\PDV\Usuarios.pas=C:\Users\Pichau\OneDrive\Documentos\Embarcadero\Studio\Projects\PDV\Unit1.pas</Transaction>
+    <Transaction>2025/03/18 14:37:34.000.954,C:\Users\Pichau\OneDrive\Documentos\Embarcadero\Studio\Projects\PDV\Usuarios.dfm=C:\Users\Pichau\OneDrive\Documentos\Embarcadero\Studio\Projects\PDV\Unit1.dfm</Transaction>
+    <Transaction>2025/03/18 15:04:53.000.460,C:\Users\Pichau\OneDrive\Documentos\Embarcadero\Studio\Projects\PDV\Cadastro\Usuarios.dfm=C:\Users\Pichau\OneDrive\Documentos\Embarcadero\Studio\Projects\PDV\Usuarios.dfm</Transaction>
+    <Transaction>2025/03/18 15:04:53.000.460,C:\Users\Pichau\OneDrive\Documentos\Embarcadero\Studio\Projects\PDV\Cadastro\Usuarios.pas=C:\Users\Pichau\OneDrive\Documentos\Embarcadero\Studio\Projects\PDV\Usuarios.pas</Transaction>
+    <Transaction>2025/03/18 15:05:21.000.118,=C:\Users\Pichau\OneDrive\Documentos\Embarcadero\Studio\Projects\PDV\Unit1.pas</Transaction>
+    <Transaction>2025/03/18 15:05:32.000.988,C:\Users\Pichau\OneDrive\Documentos\Embarcadero\Studio\Projects\PDV\Cadastro\Funcionario.pas=C:\Users\Pichau\OneDrive\Documentos\Embarcadero\Studio\Projects\PDV\Unit1.pas</Transaction>
+    <Transaction>2025/03/18 15:05:32.000.988,C:\Users\Pichau\OneDrive\Documentos\Embarcadero\Studio\Projects\PDV\Cadastro\Funcionario.dfm=C:\Users\Pichau\OneDrive\Documentos\Embarcadero\Studio\Projects\PDV\Unit1.dfm</Transaction>
+    <Transaction>2025/03/18 15:30:48.000.008,=C:\Users\Pichau\OneDrive\Documentos\Embarcadero\Studio\Projects\PDV\Unit1.pas</Transaction>
+    <Transaction>2025/03/18 15:30:56.000.296,C:\Users\Pichau\OneDrive\Documentos\Embarcadero\Studio\Projects\PDV\Cadastro\Cargos.pas=C:\Users\Pichau\OneDrive\Documentos\Embarcadero\Studio\Projects\PDV\Unit1.pas</Transaction>
+    <Transaction>2025/03/18 15:30:56.000.296,C:\Users\Pichau\OneDrive\Documentos\Embarcadero\Studio\Projects\PDV\Cadastro\Cargos.dfm=C:\Users\Pichau\OneDrive\Documentos\Embarcadero\Studio\Projects\PDV\Unit1.dfm</Transaction>
+    <Transaction>2025/03/18 15:41:50.000.236,=C:\Users\Pichau\OneDrive\Documentos\Embarcadero\Studio\Projects\PDV\Unit1.pas</Transaction>
+    <Transaction>2025/03/18 15:42:11.000.972,C:\Users\Pichau\OneDrive\Documentos\Embarcadero\Studio\Projects\PDV\Modulo.dfm=C:\Users\Pichau\OneDrive\Documentos\Embarcadero\Studio\Projects\PDV\Unit1.dfm</Transaction>
+    <Transaction>2025/03/18 15:42:11.000.972,C:\Users\Pichau\OneDrive\Documentos\Embarcadero\Studio\Projects\PDV\Modulo.pas=C:\Users\Pichau\OneDrive\Documentos\Embarcadero\Studio\Projects\PDV\Unit1.pas</Transaction>
+    <Transaction>2025/05/01 01:57:03.000.314,=C:\Users\Pichau\OneDrive\Documentos\Embarcadero\Studio\Projects\PDV\Unit1.pas</Transaction>
+    <Transaction>2025/05/01 01:57:32.000.215,C:\Users\Pichau\OneDrive\Documentos\Embarcadero\Studio\Projects\PDV\Unit1.dfm=C:\Users\Pichau\OneDrive\Documentos\Embarcadero\Studio\Projects\PDV\Cadastro\Fornecedores.dfm</Transaction>
+    <Transaction>2025/05/01 01:57:32.000.215,C:\Users\Pichau\OneDrive\Documentos\Embarcadero\Studio\Projects\PDV\Unit1.pas=C:\Users\Pichau\OneDrive\Documentos\Embarcadero\Studio\Projects\PDV\Cadastro\Fornecedores.pas</Transaction>
+    <Transaction>2025/05/03 08:59:51.056,=C:\Users\Pichau\OneDrive\Documentos\Embarcadero\Studio\Projects\PDV - Cliente V2\Unit1.pas</Transaction>
+    <Transaction>2025/05/03 09:00:20.073,C:\Users\Pichau\OneDrive\Documentos\Embarcadero\Studio\Projects\PDV - Cliente V2\Agendamento\Agendamento.dfm=C:\Users\Pichau\OneDrive\Documentos\Embarcadero\Studio\Projects\PDV - Cliente V2\Unit1.dfm</Transaction>
+    <Transaction>2025/05/03 09:00:20.073,C:\Users\Pichau\OneDrive\Documentos\Embarcadero\Studio\Projects\PDV - Cliente V2\Agendamento\Agendamento.pas=C:\Users\Pichau\OneDrive\Documentos\Embarcadero\Studio\Projects\PDV - Cliente V2\Unit1.pas</Transaction>
+    <Transaction>2025/05/03 09:21:41.731,=C:\Users\Pichau\OneDrive\Documentos\Embarcadero\Studio\Projects\PDV - Cliente V2\Unit1.pas</Transaction>
+    <Transaction>2025/05/03 09:22:10.080,C:\Users\Pichau\OneDrive\Documentos\Embarcadero\Studio\Projects\PDV - Cliente V2\Cadastro\Cliente.pas=C:\Users\Pichau\OneDrive\Documentos\Embarcadero\Studio\Projects\PDV - Cliente V2\Unit1.pas</Transaction>
+    <Transaction>2025/05/03 09:22:10.080,C:\Users\Pichau\OneDrive\Documentos\Embarcadero\Studio\Projects\PDV - Cliente V2\Cadastro\Cliente.dfm=C:\Users\Pichau\OneDrive\Documentos\Embarcadero\Studio\Projects\PDV - Cliente V2\Unit1.dfm</Transaction>
+    <Transaction>2025/05/03 12:21:46.101,C:\Users\Pichau\OneDrive\Documentos\Embarcadero\Studio\Projects\PDV - Cliente V2\PDVbkp.dproj=C:\Users\Pichau\OneDrive\Documentos\Embarcadero\Studio\Projects\PDV - Cliente V2\PDV.dproj</Transaction>
+  </Transactions>  <ProjectSortOrder AutoSort="0" SortType="0">
+    <File Path="Cadastro"/>
+    <File Path="Cadastro\Usuarios.pas"/>
+    <File Path="Cadastro\Usuarios.dfm"/>
+    <File Path="Cadastro\Funcionario.pas"/>
+    <File Path="Cadastro\Funcionario.dfm"/>
+    <File Path="Cadastro\Cargos.pas"/>
+    <File Path="Cadastro\Cargos.dfm"/>
+    <File Path="Cadastro\Fornecedores.pas"/>
+    <File Path="Cadastro\Fornecedores.dfm"/>
+    <File Path="Cadastro\Cliente.pas"/>
+    <File Path="Cadastro\Cliente.dfm"/>
+    <File Path="login.pas"/>
+    <File Path="login.dfm"/>
+    <File Path="Menu.pas"/>
+    <File Path="Menu.dfm"/>
+    <File Path="Modulo.pas"/>
+    <File Path="Modulo.dfm"/>
+    <File Path="Agendamento"/>
+    <File Path="Agendamento\Agendamento.pas"/>
+    <File Path="Agendamento\Agendamento.dfm"/>
+  </ProjectSortOrder>
+</BorlandProject>
