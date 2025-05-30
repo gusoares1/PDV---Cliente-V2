@@ -3,8 +3,8 @@ object FrmServico: TFrmServico
   Top = 0
   Caption = 'Servicos'
   ClientHeight = 561
-  ClientWidth = 666
-  Color = clBtnFace
+  ClientWidth = 678
+  Color = clCream
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
   Font.Height = -12
@@ -13,8 +13,8 @@ object FrmServico: TFrmServico
   OnCreate = FormCreate
   TextHeight = 15
   object Label1: TLabel
-    Left = 436
-    Top = 27
+    Left = 495
+    Top = 19
     Width = 35
     Height = 15
     Caption = 'Buscar'
@@ -27,8 +27,8 @@ object FrmServico: TFrmServico
     Caption = 'Servico:'
   end
   object btnNovo: TSpeedButton
-    Left = 66
-    Top = 415
+    Left = 57
+    Top = 399
     Width = 71
     Height = 42
     Cursor = crHandPoint
@@ -118,8 +118,8 @@ object FrmServico: TFrmServico
     OnClick = btnNovoClick
   end
   object btnSalvar: TSpeedButton
-    Left = 163
-    Top = 415
+    Left = 154
+    Top = 399
     Width = 71
     Height = 42
     Cursor = crHandPoint
@@ -210,8 +210,8 @@ object FrmServico: TFrmServico
     OnClick = btnSalvarClick
   end
   object BtnEditar: TSpeedButton
-    Left = 256
-    Top = 415
+    Left = 247
+    Top = 399
     Width = 71
     Height = 42
     Cursor = crHandPoint
@@ -302,8 +302,8 @@ object FrmServico: TFrmServico
     OnClick = BtnEditarClick
   end
   object BtnExcluir: TSpeedButton
-    Left = 349
-    Top = 415
+    Left = 340
+    Top = 399
     Width = 71
     Height = 42
     Cursor = crHandPoint
@@ -408,8 +408,8 @@ object FrmServico: TFrmServico
     Caption = 'Descricao:'
   end
   object EdtBuscarNome: TEdit
-    Left = 484
-    Top = 24
+    Left = 543
+    Top = 16
     Width = 115
     Height = 23
     TabOrder = 0
@@ -433,7 +433,7 @@ object FrmServico: TFrmServico
   object DBGrid1: TDBGrid
     Left = 41
     Top = 160
-    Width = 560
+    Width = 617
     Height = 193
     DataSource = dm.DsServicos
     TabOrder = 3

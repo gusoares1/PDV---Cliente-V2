@@ -1,0 +1,75 @@
+unit Banco;
+
+interface
+
+uses
+  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
+  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.Buttons;
+
+type
+  TForm1 = class(TForm)
+    Label2: TLabel;
+    Label1: TLabel;
+    Label5: TLabel;
+    btnSalvar: TSpeedButton;
+    edtUser: TEdit;
+    edtHost: TEdit;
+    Label3: TLabel;
+    Label4: TLabel;
+    edtDatabase: TEdit;
+    edtPort: TEdit;
+    edtPassword: TEdit;
+    Label6: TLabel;
+    btnTestConnection: TButton;
+    procedure btnTestConnectionClick(Sender: TObject);
+    procedure btnSalvarClick(Sender: TObject);
+  private
+    { Private declarations }
+  public
+    { Public declarations }
+  end;
+
+var
+  Form1: TForm1;
+
+implementation
+
+{$R *.dfm}
+
+procedure TForm1.btnSalvarClick(Sender: TObject);
+var
+  Ini: TIniFile;
+begin
+  Ini := TIniFile.Create(ExtractFilePath(ParamStr(0)) + 'config.ini');
+  try
+    Ini.WriteString('Conexao', 'Host', edtHost.Text);
+    Ini.WriteString('Conexao', 'Port', edtPort.Text);
+    Ini.WriteString('Conexao', 'Database', edtDatabase.Text);
+    Ini.WriteString('Conexao', 'User', edtUser.Text);
+    Ini.WriteString('Conexao', 'Password', edtPassword.Text);
+    ShowMessage('Configuração salva com sucesso.');
+  finally
+    Ini.Free;
+  end;
+end;
+
+procedure TForm1.btnTestConnectionClick(Sender: TObject);
+begin
+  FDConnection1.Params.Clear;
+  FDConnection1.Params.DriverID := 'MySQL';
+  FDConnection1.Params.Database := edtDatabase.Text;
+  FDConnection1.Params.UserName := edtUser.Text;
+  FDConnection1.Params.Password := edtPassword.Text;
+  FDConnection1.Params.Add('Server=' + edtHost.Text);
+  FDConnection1.Params.Add('Port=' + edtPort.Text);
+
+  try
+    FDConnection1.Connected := True;
+    ShowMessage('Conexão bem-sucedida!');
+  except
+    on E: Exception do
+      ShowMessage('Erro ao conectar: ' + E.Message);
+  end;
+end;
+
+end.

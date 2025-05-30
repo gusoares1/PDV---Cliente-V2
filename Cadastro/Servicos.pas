@@ -54,15 +54,24 @@ end;
 
 procedure TFrmServico.btnNovoClick(Sender: TObject);
 begin
+    if dm.tb_servicos.State in [dsEdit] then
+    dm.tb_servicos.Cancel;
   btnSalvar.Enabled := True;
+
   EdtServico.Enabled := True;
   EdtDescricao.Enabled := True;
   edtpreco.Enabled := True;
-  EdtServico.Clear;
-  EdtDescricao.Clear;
-  edtpreco.Clear;
+
+  EdtServico.text := '';
+  EdtDescricao.text := '';
+  edtpreco.text := '';
+
   EdtServico.SetFocus;
   dm.tb_servicos.Insert;
+
+  btnEditar.Enabled := False;
+  btnExcluir.Enabled := False;
+
 end;
 
 procedure TFrmServico.btnSalvarClick(Sender: TObject);
@@ -106,22 +115,46 @@ end;
 
 procedure TFrmServico.btnExcluirClick(Sender: TObject);
 begin
-  if MessageDlg('Deseja excluir o serviço?', mtConfirmation, [mbYes, mbNo], 0) = mrYes then
-  begin
-    dm.tb_servicos.Delete;
-    listar;
-    MessageDlg('Excluído com sucesso.', mtInformation, [mbOK], 0);
-  end;
+    if MessageDlg('Deseja Excluir o registro?', TMsgDlgType.mtConfirmation, [TMsgDlgBtn.mbYes, TMsgDlgBtn.mbNo], 0) = mrYes then
+    begin
+      associarCampos;
+      dm.query_servicos.close;
+      dm.query_servicos.sql.Clear;
+      dm.query_servicos.sql.add('DELETE FROM servico WHERE id = :id');
+      dm.query_servicos.ParamByName('id').Value := id;
+      dm.query_servicos.ExecSQL;
+      MessageDlg('Deletado com sucesso', TMsgDlgType.mtInformation, mbOKCancel, 0);
+      btnEditar.Enabled := false;
+      btnExcluir.Enabled := false;
+      EdtServico.Text := '';
+      edtpreco.Text := '';
+      EdtDescricao.Text := '';
+      listar;
+
+    end;
+
 end;
 
 procedure TFrmServico.DBGrid1CellClick(Column: TColumn);
 begin
-  EdtServico.Text := dm.tb_servicos.FieldByName('nome').AsString;
-  EdtDescricao.Text := dm.tb_servicos.FieldByName('descricao').AsString;
-  edtpreco.Text := dm.tb_servicos.FieldByName('preco').AsString;
-  id := dm.tb_servicos.FieldByName('id').AsString;
+    // Cancela a inserção se estiver em modo Insert
+  if dm.tb_servicos.State in [dsInsert] then
+    dm.tb_servicos.Cancel;
+
+  EdtServico.Text := dm.query_servicos.FieldByName('nome').AsString;
+  EdtDescricao.Text := dm.query_servicos.FieldByName('descricao').AsString;
+  edtpreco.Text := dm.query_servicos.FieldByName('preco').AsString;
+  id := dm.query_servicos.FieldByName('id').AsString;
+
   btnEditar.Enabled := True;
   btnExcluir.Enabled := True;
+
+  dm.tb_servicos.Edit;
+
+  EdtServico.Enabled := True;
+  EdtDescricao.Enabled := True;
+  edtpreco.Enabled := True;
+
 end;
 
 procedure TFrmServico.edtprecoKeyPress(Sender: TObject; var Key: Char);

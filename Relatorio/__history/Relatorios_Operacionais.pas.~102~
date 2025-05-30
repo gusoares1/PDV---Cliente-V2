@@ -1,0 +1,323 @@
+unit Relatorios_Operacionais;
+
+interface
+
+uses
+  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
+  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.ComCtrls, System.ImageList,
+  Vcl.ImgList, Vcl.StdCtrls, Data.DB, Vcl.Grids, Vcl.DBGrids, Vcl.ExtCtrls,ComObj,FireDAC.Comp.Client,System.Math;
+
+type
+  TfrmRelatoriosOperacionais = class(TForm)
+    pcRelatorios: TPageControl;
+    tsAgenda: TTabSheet;
+    tsServicosRealizados: TTabSheet;
+    tsPendentes: TTabSheet;
+    tsConflitos: TTabSheet;
+    Panel1: TPanel;
+    Label1: TLabel;
+    dtpDataInicio: TDateTimePicker;
+    Label2: TLabel;
+    btnFiltrarAgenda: TButton;
+    grdFaturamentoServico: TDBGrid;
+    btnImprimir: TButton;
+    pnlfiltrosSerivos: TPanel;
+    btnFiltrarServicos: TButton;
+    grdServicosRealizados: TDBGrid;
+    dtpDataFim: TDateTimePicker;
+    Label3: TLabel;
+    cboFuncionario: TComboBox;
+    SaveDialog1: TSaveDialog;
+    Panel2: TPanel;
+    btnEnviarWhatsApp: TButton;
+    DBGrid1: TDBGrid;
+    cboFiltroCliente: TComboBox;
+    Label4: TLabel;
+    btnFiltrarPendentes: TButton;
+    btnMarcarConfirmado: TButton;
+    procedure btnFiltrarAgendaClick(Sender: TObject);
+    procedure grdFaturamentoServicoDrawColumnCell(Sender: TObject; const Rect: TRect;
+      DataCol: Integer; Column: TColumn; State: TGridDrawState);
+    procedure btnImprimirClick(Sender: TObject);
+    procedure FormShow(Sender: TObject);
+    procedure btnFiltrarServicosClick(Sender: TObject);
+    procedure grdServicosRealizadosDrawColumnCell(Sender: TObject;
+      const Rect: TRect; DataCol: Integer; Column: TColumn;
+      State: TGridDrawState);
+    procedure btnFiltrarPendentesClick(Sender: TObject);
+    procedure btnEnviarWhatsAppClick(Sender: TObject);
+    procedure DBGrid1DblClick(Sender: TObject);
+    procedure DBGrid1DrawColumnCell(Sender: TObject; const Rect: TRect;
+      DataCol: Integer; Column: TColumn; State: TGridDrawState);
+    procedure btnMarcarConfirmadoClick(Sender: TObject);
+  private
+      procedure ExportarParaCSV(const FileName: string);
+
+      procedure carregarCombobox(
+          Combo: TComboBox;          // Combobox que será preenchido
+          Query: TFDQuery;           // Query com os dados
+          NomeColuna: string;        // Nome da coluna a ser carregada
+          AdicionarItemVazio: Boolean = True // Opcional: adiciona item em branco no início
+        );
+  public
+    { Public declarations }
+  end;
+
+var
+  frmRelatoriosOperacionais: TfrmRelatoriosOperacionais;
+
+implementation
+
+{$R *.dfm}
+
+uses Modulo, Agendamento;
+
+procedure TfrmRelatoriosOperacionais.btnEnviarWhatsAppClick(Sender: TObject);
+var
+  Mensagem: string;
+  Telefone: string;
+begin
+  if not dm.query_Agendamentos_pendentes.IsEmpty then
+  begin
+    Telefone := dm.query_Agendamentos_pendentes.FieldByName('Telefone').AsString;
+    Mensagem := 'Olá ' + dm.query_Agendamentos_pendentes.FieldByName('Cliente').AsString +
+      '! Por favor, confirme seu agendamento para ' +
+      FormatDateTime('dd/mm/yyyy', dm.query_Agendamentos_pendentes.FieldByName('data').AsDateTime) +
+      ' às ' + FormatDateTime('hh:nn', dm.query_Agendamentos_pendentes.FieldByName('hora').AsDateTime) + '.';
+
+    frmAgendamento.EnviarMensagemWhatsApp(Telefone, Mensagem); // Use sua função existente
+  end;
+end;
+
+procedure TfrmRelatoriosOperacionais.btnFiltrarAgendaClick(Sender: TObject);
+begin
+  dm.query_agendamentodiario.sql.Clear;
+  dm.query_agendamentodiario.sql.add(  'SELECT id,data, hora, Cliente, Funcionario, Realizado ' +
+    'FROM agendamentos ' +
+    'WHERE data BETWEEN :DataInicio AND :DataFim');
+
+  dm.query_agendamentodiario.ParamByName('DataInicio').AsDate := dtpDataInicio.Date;
+  dm.query_agendamentodiario.ParamByName('DataFim').AsDate := dtpDataFim.Date;
+  dm.query_agendamentodiario.Open
+end;
+
+procedure TfrmRelatoriosOperacionais.btnFiltrarPendentesClick(Sender: TObject);
+var
+  FiltroCliente: string;
+begin
+  FiltroCliente := '';
+  if cboFiltroCliente.ItemIndex > 0 then
+    FiltroCliente := ' AND a.Cliente = ''' + cboFiltroCliente.Text + '''';
+
+  dm.query_Agendamentos_pendentes.Close;
+  dm.query_Agendamentos_pendentes.SQL.Text :=
+    'SELECT a.id, a.data, a.hora, a.Cliente, c.telefone ' +
+    'FROM agendamentos a ' +
+    'LEFT JOIN cliente c ON a.Cliente = c.nome ' +
+    'WHERE a.ConfirmacaoCliente = 0 ' + FiltroCliente +
+    ' ORDER BY a.data, a.hora';
+
+  dm.query_Agendamentos_pendentes.Open;
+end;
+
+procedure TfrmRelatoriosOperacionais.btnFiltrarServicosClick(Sender: TObject);
+var
+  FiltroFuncionario: string;
+begin
+  FiltroFuncionario := '';
+  if cboFuncionario.ItemIndex >= 0 then
+    FiltroFuncionario := ' AND Funcionario = ''' + cboFuncionario.Text + '''';
+
+  dm.query_servicosRealizado.Close;
+  dm.query_servicosRealizado.SQL.Text :=
+    'SELECT Funcionario, ' +
+    'COUNT(*) AS TotalAgendamento   , ' +
+    'SUM(horas_trabalhadas) AS TotalHoras ' +
+    'FROM agendamentos ' +
+    'WHERE Realizado = 1 ' + FiltroFuncionario +
+    ' GROUP BY Funcionario, Servico';
+
+  dm.query_servicosRealizado.Open;
+end;
+
+procedure TfrmRelatoriosOperacionais.btnImprimirClick(Sender: TObject);
+begin
+  SaveDialog1.Filter := 'Arquivos CSV|*.csv';
+  if SaveDialog1.Execute then
+    ExportarParaCSV(SaveDialog1.FileName);
+end;
+
+procedure TfrmRelatoriosOperacionais.btnMarcarConfirmadoClick(Sender: TObject);
+var
+  IDAgendamento: Integer;
+begin
+  if (dm.query_Agendamentos_pendentes.Active) and
+     (not dm.query_Agendamentos_pendentes.IsEmpty) then
+  begin
+    IDAgendamento := dm.query_Agendamentos_pendentes.FieldByName('id').AsInteger;
+
+    if MessageDlg('Deseja marcar este agendamento como confirmado?',
+       mtConfirmation, [mbYes, mbNo], 0) = mrYes then
+    begin
+      // Executa o UPDATE
+      with dm.query_aux do
+      begin
+        Close;
+        SQL.Text := 'UPDATE agendamentos SET ConfirmacaoCliente = 1 WHERE id = :id';
+        ParamByName('id').AsInteger := IDAgendamento;
+        ExecSQL;
+      end;
+
+      // Atualiza a grid dos agendamentos pendentes
+      btnFiltrarPendentesClick(Sender);
+
+      ShowMessage('Agendamento confirmado com sucesso!');
+    end;
+  end
+  else
+    ShowMessage('Nenhum agendamento selecionado!');
+end;
+
+
+procedure TfrmRelatoriosOperacionais.carregarCombobox(
+  Combo: TComboBox;
+  Query: TFDQuery;
+  NomeColuna: string;
+  AdicionarItemVazio: Boolean = True);
+begin
+  Combo.Items.BeginUpdate;
+  try
+    try
+      Combo.Clear;
+
+      // Verifica se a coluna existe na query
+      if Query.FindField(NomeColuna) = nil then
+        raise Exception.Create('Coluna "' + NomeColuna + '" não existe na query!');
+
+      // Adiciona item vazio
+      if AdicionarItemVazio then
+        Combo.Items.Add('');
+
+      // Executa query se necessário
+      if not Query.Active then
+        Query.Open;
+
+      // Carrega dados
+      Query.First;
+      while not Query.EOF do
+      begin
+        Combo.Items.Add(Query.FieldByName(NomeColuna).AsString);
+        Query.Next;
+      end;
+
+      // Configura seleção padrão
+      Combo.ItemIndex := IfThen(AdicionarItemVazio, 0, -1);
+
+    except
+      on E: Exception do
+        ShowMessage('Erro ao carregar combobox: ' + E.Message);
+    end;
+  finally
+    Combo.Items.EndUpdate;
+    Query.Close; // Ajuste conforme sua necessidade
+  end;
+end;
+
+
+procedure TfrmRelatoriosOperacionais.DBGrid1DblClick(Sender: TObject);
+begin
+    btnEnviarWhatsAppClick(Sender);
+end;
+
+procedure TfrmRelatoriosOperacionais.DBGrid1DrawColumnCell(Sender: TObject;
+  const Rect: TRect; DataCol: Integer; Column: TColumn; State: TGridDrawState);
+var
+  DataAgendamento: TDate;
+begin
+  DataAgendamento := dm.query_Agendamentos_pendentes.FieldByName('data').AsDateTime;
+
+  // Destaque vermelho se o agendamento for para hoje ou anterior
+  if DataAgendamento <= Date then
+  begin
+    DBGrid1.Canvas.Brush.Color := $006666FF; // Vermelho claro
+    DBGrid1.DefaultDrawColumnCell(Rect, DataCol, Column, State);
+  end;
+end;
+
+procedure TfrmRelatoriosOperacionais.ExportarParaCSV(const FileName: string);
+var
+  F: TextFile;
+  i: Integer;
+begin
+  AssignFile(F, FileName);
+  Rewrite(F);
+
+  // Escrever cabeçalhos
+  for i := 0 to dm.query_agendamentodiario.FieldCount - 1 do
+  begin
+    Write(F, dm.query_agendamentodiario.Fields[i].FieldName);
+    if i < dm.query_agendamentodiario.FieldCount - 1 then
+      Write(F, ';');
+  end;
+  Writeln(F);
+
+  // Escrever dados
+  dm.query_agendamentodiario.First;
+  while not dm.query_agendamentodiario.Eof do
+  begin
+    for i := 0 to dm.query_agendamentodiario.FieldCount - 1 do
+    begin
+      Write(F, dm.query_agendamentodiario.Fields[i].AsString);
+      if i < dm.query_agendamentodiario.FieldCount - 1 then
+        Write(F, ';');
+    end;
+    Writeln(F);
+    dm.query_agendamentodiario.Next;
+  end;
+
+  CloseFile(F);
+  ShowMessage('Exportado com sucesso!');
+end;
+
+
+
+procedure TfrmRelatoriosOperacionais.FormShow(Sender: TObject);
+begin
+// No FormShow ou onde precisar
+carregarCombobox(
+  cboFuncionario,             // Componente ComboBox
+  dm.query_func,        // Query: SELECT nome FROM funcionarios
+  'nome',                      // Coluna a ser carregada
+  True                         // Adiciona item vazio no início
+);
+
+ carregarCombobox(cboFiltroCliente, dm.query_cliente, 'nome', True);
+end;
+
+procedure TfrmRelatoriosOperacionais.grdFaturamentoServicoDrawColumnCell(Sender: TObject;
+  const Rect: TRect; DataCol: Integer; Column: TColumn; State: TGridDrawState);
+begin
+  if Column.FieldName = 'Realizado' then
+  begin
+    if Column.Field.AsInteger = 1 then
+      grdAgenda.Canvas.Brush.Color := clGreen
+    else
+      grdAgenda.Canvas.Brush.Color := clRed;
+
+    grdAgenda.DefaultDrawColumnCell(Rect, DataCol, Column, State);
+  end;
+end;
+
+procedure TfrmRelatoriosOperacionais.grdServicosRealizadosDrawColumnCell(
+  Sender: TObject; const Rect: TRect; DataCol: Integer; Column: TColumn;
+  State: TGridDrawState);
+begin
+  // Destaque em azul claro para totais
+  if (Column.FieldName = 'TotalServicos') or (Column.FieldName = 'TotalHoras') then
+  begin
+    grdServicosRealizados.Canvas.Brush.Color := $00FFE0C0;
+    grdServicosRealizados.DefaultDrawColumnCell(Rect, DataCol, Column, State);
+  end;
+end;
+
+end.

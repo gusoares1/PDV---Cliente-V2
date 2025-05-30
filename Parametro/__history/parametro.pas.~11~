@@ -1,0 +1,92 @@
+unit parametro;
+
+interface
+
+uses
+  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
+  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.Buttons,IdHTTP, IdSSLOpenSSL, System.Classes, System.SysUtils;
+
+type
+  TFrmParametro = class(TForm)
+    Label2: TLabel;
+    Label1: TLabel;
+    edtToken: TEdit;
+    edtURL: TEdit;
+    Label5: TLabel;
+    btnSalvar: TSpeedButton;
+    procedure btnSalvarClick(Sender: TObject);
+  private
+    { Private declarations }
+  public
+    procedure CarregarConfiguracoesWhatsApp(var url, token: string);
+    procedure EnviarMensagemWhatsApp(const Mensagem: string);
+  end;
+
+var
+  FrmParametro: TFrmParametro;
+
+implementation
+
+{$R *.dfm}
+
+uses Modulo;
+
+procedure TFrmParametro.btnSalvarClick(Sender: TObject);
+begin
+  dm.query_config_whatsapp.Close;
+  dm.query_config_whatsapp.SQL.Text := 'DELETE FROM config_whatsapp';
+  dm.query_config_whatsapp.ExecSQL;
+
+  dm.query_config_whatsapp.SQL.Text :=
+    'INSERT INTO config_whatsapp (api_url, client_token) VALUES (:url, :token)';
+  dm.query_config_whatsapp.ParamByName('url').AsString := edtURL.Text;
+  dm.query_config_whatsapp.ParamByName('token').AsString := edtToken.Text;
+  dm.query_config_whatsapp.ExecSQL;
+
+  ShowMessage('Configurações salvas com sucesso!');
+end;
+
+procedure TFrmParametro.CarregarConfiguracoesWhatsApp(var url, token: string);
+begin
+  dm.query_config_whatsapp.Close;
+  dm.query_config_whatsapp.SQL.Text := 'SELECT api_url, client_token FROM config_whatsapp LIMIT 1';
+  dm.query_config_whatsapp.Open;
+
+  if not dm.query_config_whatsapp.IsEmpty then
+  begin
+    url := dm.query_config_whatsapp.FieldByName('api_url').AsString;
+    token := dm.query_config_whatsapp.FieldByName('client_token').AsString;
+  end
+  else
+  begin
+    url := '';
+    token := '';
+  end;
+end;
+
+procedure TFrmParametro.EnviarMensagemWhatsApp(const Mensagem: string);
+var
+  Http: TIdHTTP;
+  Json: TStringStream;
+  url, token: string;
+begin
+  CarregarConfiguracoesWhatsApp(url, token);
+
+  if (url = '') or (token = '') then
+  begin
+    ShowMessage('Configurações de WhatsApp não encontradas.');
+    Exit;
+  end;
+
+  Http := TIdHTTP.Create(nil);
+  try
+    Http.Request.CustomHeaders.Values['Authorization'] := token;
+    Json := TStringStream.Create('{"mensagem":"' + Mensagem + '"}', TEncoding.UTF8);
+    Http.Post(url, Json);
+  finally
+    Json.Free;
+    Http.Free;
+  end;
+end;
+
+end.

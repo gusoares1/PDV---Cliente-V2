@@ -160,6 +160,9 @@ begin
   habilitarCampos;
   dm.tb_usuario.Insert;
   btnSalvar.Enabled := true;
+  btnEditar.Enabled := False;
+  btnExcluir.Enabled := False;
+  limpar;
 end;
 
 procedure TFrmUsuario.btnSalvarClick(Sender: TObject);
@@ -275,6 +278,9 @@ end;
 
 procedure TFrmUsuario.limpar;
 begin
+    EdtNome.clear;
+    edtUsuario.clear;
+    edtSenha.clear;
 
 end;
 

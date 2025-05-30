@@ -6,7 +6,7 @@ uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Data.DB, Vcl.Grids, Vcl.DBGrids,
   Vcl.Buttons, Vcl.StdCtrls, Vcl.WinXPickers, Vcl.ComCtrls, IdHTTP, IdSSLOpenSSL, System.JSON,
-  Vcl.Samples.Spin;
+  Vcl.Samples.Spin, Vcl.ExtCtrls,DateUtils;
 
 type
   TfrmAgendamento = class(TForm)
@@ -18,8 +18,6 @@ type
     btnEditar: TSpeedButton;
     btnExcluir: TSpeedButton;
     DBGrid1: TDBGrid;
-    Label3: TLabel;
-    EdtBuscar: TEdit;
     DateAgendamento: TDateTimePicker;
     TimeAgendamento: TTimePicker;
     Label1: TLabel;
@@ -31,6 +29,10 @@ type
     Label6: TLabel;
     SpinHorasTrabalhadas: TSpinEdit;
     Label7: TLabel;
+    Button1: TButton;
+    Label3: TLabel;
+    btnPagamento: TButton;
+    ChkAtivar: TCheckBox;
     procedure btnBuscarClienteClick(Sender: TObject);
     procedure btnBuscarFuncionarioClick(Sender: TObject);
     procedure btnNovoClick(Sender: TObject);
@@ -42,27 +44,32 @@ type
     procedure DBGrid1CellClick(Column: TColumn);
     procedure DBGrid1DrawColumnCell(Sender: TObject; const Rect: TRect;
       DataCol: Integer; Column: TColumn; State: TGridDrawState);
+    procedure DBGrid1DblClick(Sender: TObject);
+
+    procedure Button1Click(Sender: TObject);
+    procedure FormCreate(Sender: TObject);
+    procedure btnPagamentoClick(Sender: TObject);
   private
-    procedure limpar;
+   procedure limpar;
     procedure habilitarCampos;
     procedure desabilitarCampos;
     procedure associarCampos;
-    procedure listar;
-    procedure buscarNome;
-    procedure EnviarMensagemWhatsApp(const Numero, Mensagem: string);
   public
-    { Public declarations }
+   procedure filtrarAgendamentos(cliente, funcionario: string; data: TDate; usarData: Boolean);
+   procedure listar;
+   procedure EnviarMensagemWhatsApp(const Numero, Mensagem: string);
   end;
 
 var
   frmAgendamento: TfrmAgendamento;
   id: Integer;
+  idSelecionado: Integer;
 
 implementation
 
 {$R *.dfm}
 
-uses Cliente, Funcionario, Modulo;
+uses Cliente, Funcionario, Modulo, Vincular_Servicos, Filtrar, pagto_agend;
 
 procedure TfrmAgendamento.associarCampos;
 begin
@@ -74,6 +81,7 @@ begin
   dm.tb_agendamento.FieldByName('horas_trabalhadas').AsInteger := SpinHorasTrabalhadas.Value;
   dm.tb_agendamento.FieldByName('ConfirmacaoCliente').AsInteger := 0;
   dm.tb_agendamento.FieldByName('Realizado').AsInteger := 0;
+
 end;
 
 procedure TfrmAgendamento.btnBuscarClienteClick(Sender: TObject);
@@ -112,9 +120,9 @@ begin
   dm.query_agendamentos.Close;
   dm.query_agendamentos.SQL.Clear;
   dm.query_agendamentos.SQL.add(
-            'UPDATE agendamentos'+
+            'UPDATE agendamentos '+
             'SET cliente = :cliente, funcionario = :funcionario, descricao = :descricao,' +
-            'data = :data, hora = :hora, horas_trabalhadas = :horas_trabalhadas'+
+            'data = :data, hora = :hora, horas_trabalhadas = :horas_trabalhadas , ConfirmacaoCliente = :ConfirmacaoCliente  '+
             'WHERE id = :id'
             );
 
@@ -125,6 +133,7 @@ begin
   dm.query_agendamentos.ParamByName('hora').AsTime := TimeAgendamento.Time;
   dm.query_agendamentos.ParamByName('horas_trabalhadas').AsInteger := SpinHorasTrabalhadas.Value;
   dm.query_agendamentos.ParamByName('id').AsInteger := id;
+  dm.query_agendamentos.ParamByName('ConfirmacaoCliente').AsBoolean := ChkAtivar.Checked;
 
   dm.query_agendamentos.ExecSQL;
 
@@ -155,6 +164,8 @@ begin
     end;
 end;
 
+
+
 procedure TfrmAgendamento.btnNovoClick(Sender: TObject);
 begin
   habilitarCampos;
@@ -163,11 +174,28 @@ begin
   btnEditar.Enabled := false;
   btnExcluir.Enabled := false;
   limpar;
+
+  TimeAgendamento.Time := Time; // define hora atual do PC
+  DateAgendamento.time := time;
+  SpinHorasTrabalhadas.Value := 0;
+end;
+
+procedure TfrmAgendamento.btnPagamentoClick(Sender: TObject);
+begin
+  if not dm.query_agendamentos.IsEmpty then
+  begin
+    idAgendamento := dm.query_agendamentos.FieldByName('id').AsInteger;
+    Application.CreateForm(TfrmPagtoAgendamento, frmPagtoAgendamento);
+    idAgendamento := idSelecionado;
+    frmPagtoAgendamento.ShowModal;
+  end;
 end;
 
 procedure TfrmAgendamento.btnSalvarClick(Sender: TObject);
 var
   Mensagem: string;
+  HoraInicioNova, HoraFinalNova: TTime;
+  DuracaoHoras: Integer;
 begin
   try
     if Trim(EdtCliente.Text) = '' then
@@ -176,23 +204,28 @@ begin
     if Trim(EdtFuncionario.Text) = '' then
       raise Exception.Create('Preencha o Funcionário.');
 
-    if Trim(EdtDescricao.Text) = '' then
-      raise Exception.Create('Preencha a Descrição.');
+    // Cálculo da hora inicial e final do novo agendamento
+    HoraInicioNova := StrToTime(FormatDateTime('hh:nn', TimeAgendamento.Time));
+    DuracaoHoras := SpinHorasTrabalhadas.Value;
+    HoraFinalNova := IncHour(HoraInicioNova, DuracaoHoras);
 
-    // Verifica se já existe um agendamento com mesma data/hora e funcionário
+    // Validação de sobreposição de horários
+    dm.query_agendamentos.Close;
     dm.query_agendamentos.SQL.Clear;
-    dm.query_agendamentos.Params.Clear;
     dm.query_agendamentos.SQL.Text :=
-      'SELECT * FROM agendamentos WHERE data = :data AND hora = :hora AND funcionario = :funcionario';
+      'SELECT * FROM agendamentos ' +
+      'WHERE data = :data AND funcionario = :funcionario ' +
+      'AND (hora < :HoraFinalNova) ' +
+      'AND (ADDTIME(hora, SEC_TO_TIME(horas_trabalhadas * 3600)) > :HoraInicioNova)';
 
     dm.query_agendamentos.ParamByName('data').AsDate := DateAgendamento.Date;
-    dm.query_agendamentos.ParamByName('hora').AsTime := TimeAgendamento.Time;
     dm.query_agendamentos.ParamByName('funcionario').AsString := EdtFuncionario.Text;
-
+    dm.query_agendamentos.ParamByName('HoraInicioNova').AsTime := HoraInicioNova;
+    dm.query_agendamentos.ParamByName('HoraFinalNova').AsTime := HoraFinalNova;
     dm.query_agendamentos.Open;
 
     if not dm.query_agendamentos.IsEmpty then
-      raise Exception.Create('Já existe um agendamento para essa data, hora e funcionário.');
+      raise Exception.Create('Já existe um agendamento nesse intervalo de tempo para esse funcionário.');
 
     // Salva
     associarCampos;
@@ -219,7 +252,7 @@ begin
 
     if (telefoneCliente <> '') and (nomeCliente <> '') and (nomeFunc <> '') then
     begin
-      Mensagem := Format('Olá %s! Voce tem um serviço, agendado para %s às %s com Cliente %s.',
+      Mensagem := Format('Olá %s! Você tem um serviço agendado para %s às %s com Cliente %s.',
         [nomeFunc,
          FormatDateTime('dd/mm/yyyy', DateAgendamento.Date),
          FormatDateTime('hh:nn', TimeAgendamento.Time),
@@ -234,43 +267,76 @@ begin
   end;
 end;
 
-
-procedure TfrmAgendamento.buscarNome;
+procedure TfrmAgendamento.Button1Click(Sender: TObject);
 begin
+  if FrmFiltroAgendamento = nil then
+    Application.CreateForm(TFrmFiltroAgendamento, FrmFiltroAgendamento);
 
+  if FrmFiltroAgendamento.ShowModal = mrOk then
+  begin
+    filtrarAgendamentos(
+      FrmFiltroAgendamento.EdtClienteFiltro.Text,
+      FrmFiltroAgendamento.EdtFuncionarioFiltro.Text,
+      FrmFiltroAgendamento.DateFiltro.Date,
+      FrmFiltroAgendamento.ChkUsarData.Checked
+    );
+  end;
 end;
 
 procedure TfrmAgendamento.DBGrid1CellClick(Column: TColumn);
 begin
+  try
+    // Habilita edição apenas se for o campo "Realizado"
+    if (Column.Field.FieldName = 'ConfirmacaoCliente') then
+    begin
+      if not (dm.query_agendamentos.State in [dsEdit, dsInsert]) then
+        dm.query_agendamentos.Edit;
 
-     habilitarCampos;
-     btnEditar.Enabled := true;
-     btnExcluir.Enabled := true;
-     dm.tb_agendamento.Edit;
+      // Tenta alterar o valor usando tratamento numérico
+      if Column.Field.AsInteger = 1 then
+        Column.Field.AsInteger := 0
+      else
+        Column.Field.AsInteger := 1;
+    end;
 
-       // Captura o ID do agendamento selecionado
-     id := dm.query_agendamentos.FieldByName('id').AsInteger;
+    // Restante do código existente...
+    habilitarCampos;
+    btnEditar.Enabled := true;
+    btnExcluir.Enabled := true;
+    btnPagamento.Enabled := true;
 
-     EdtCliente.Text :=dm.query_agendamentos.FieldByName('cliente').value;
+    dm.tb_agendamento.Edit;
+    id := dm.query_agendamentos.FieldByName('id').AsInteger;
+    idSelecionado := id;
 
-     EdtFuncionario.Text :=dm.query_agendamentos.FieldByName('funcionario').value;
+    EdtCliente.Text := dm.query_agendamentos.FieldByName('cliente').AsString;
+    EdtFuncionario.Text := dm.query_agendamentos.FieldByName('funcionario').AsString;
+    EdtDescricao.Text := dm.query_agendamentos.FieldByName('descricao').AsString;
+    DateAgendamento.Date := dm.query_agendamentos.FieldByName('data').AsDateTime;
+    TimeAgendamento.Time := dm.query_agendamentos.FieldByName('hora').AsDateTime;
+    SpinHorasTrabalhadas.Value := dm.query_agendamentos.FieldByName('horas_trabalhadas').AsInteger;
 
-     EdtDescricao.Text :=dm.query_agendamentos.FieldByName('descricao').value;
+  except
+    on E: Exception do
+    begin
+      if E.Message.Contains('Realizado') then
+        MessageDlg('Não é possível alterar', mtError, [mbOK], 0)
+      else
+        MessageDlg('Erro: ' + E.Message, mtError, [mbOK], 0);
+    end;
+  end;
+end;
+procedure TfrmAgendamento.DBGrid1DblClick(Sender: TObject);
 
-     DateAgendamento.date :=dm.query_agendamentos.FieldByName('data').AsDateTime;
 
-     timeagendamento.time :=dm.query_agendamentos.FieldByName('hora').AsDateTime;
-
-     SpinHorasTrabalhadas.Value := dm.query_agendamentos.FieldByName('horas_trabalhadas').AsInteger;
-
-
-  if not (dm.query_agendamentos.State in [dsEdit, dsInsert]) then
-    dm.query_agendamentos.Edit;
-
-  if Column.Field.FieldName = 'ConfirmacaoCliente' then
-    Column.Field.AsInteger := Ord(Column.Field.AsInteger = 0)
-  else if Column.Field.FieldName = 'Realizado' then
-    Column.Field.AsInteger := Ord(Column.Field.AsInteger = 0);
+begin
+  if not dm.query_agendamentos.IsEmpty then
+  begin
+    idSelecionado := dm.query_agendamentos.FieldByName('id').AsInteger;
+    Application.CreateForm(TfrmAgendamentoServ, frmAgendamentoServ);
+    idAgendamento := idSelecionado;
+    frmAgendamentoServ.ShowModal;
+  end;
 end;
 
 procedure TfrmAgendamento.DBGrid1DrawColumnCell(Sender: TObject;
@@ -304,95 +370,125 @@ begin
     EdtDescricao.Enabled := false;
     btnBuscarFuncionario.Enabled := false;
     btnBuscarCliente.Enabled := false;
+    btnPagamento.Enabled := false;
 
 end;
 
-procedure TfrmAgendamento.EnviarMensagemWhatsApp(const Numero, Mensagem: string);
+ procedure TfrmAgendamento.EnviarMensagemWhatsApp(const Numero, Mensagem: string);
 var
   Http: TIdHTTP;
   SSL: TIdSSLIOHandlerSocketOpenSSL;
   Json: TStringStream;
-  URL, NumeroFormatado, MensagemFormatada: string;
+  URL, Token, NumeroFormatado, MensagemFormatada: string;
   Response: string;
 begin
+  // BUSCAR DO BANCO
+  dm.query_config_whatsapp.SQL.Text := 'SELECT id ,client_token, api_url FROM config_whatsapp LIMIT 1';
+  dm.query_config_whatsapp.Open;
+
+  Token := dm.query_config_whatsapp.FieldByName('client_token').AsString;
+  URL := dm.query_config_whatsapp.FieldByName('api_url').AsString;
+
+  dm.query_config_whatsapp.Close;
+
+  if (Trim(Token) = '') or (Trim(URL) = '') then
+  begin
+    ShowMessage('Configurações do WhatsApp não encontradas.');
+    Exit;
+  end;
+
   Http := TIdHTTP.Create(nil);
   SSL := TIdSSLIOHandlerSocketOpenSSL.Create(nil);
   Json := nil;
-  
+
   try
-    // Configuração do SSL
     SSL.SSLOptions.Method := sslvTLSv1_2;
     Http.IOHandler := SSL;
-    
-    // Headers básicos
+
     Http.Request.UserAgent := 'Mozilla/5.0';
     Http.Request.ContentType := 'application/json';
-    Http.Request.CustomHeaders.AddValue('Client-Token', 'F880d602601ed4ba2b172cfba4b951176S');
+    Http.Request.CustomHeaders.AddValue('Client-Token', Token);
     Http.Request.CustomHeaders.AddValue('Accept', '*/*');
 
-    // Formata o número (apenas números)
-    NumeroFormatado := StringReplace(Numero, ' ', '', [rfReplaceAll]);
-    NumeroFormatado := StringReplace(NumeroFormatado, '+', '', [rfReplaceAll]);
-    NumeroFormatado := StringReplace(NumeroFormatado, '-', '', [rfReplaceAll]);
-    NumeroFormatado := StringReplace(NumeroFormatado, '(', '', [rfReplaceAll]);
-    NumeroFormatado := StringReplace(NumeroFormatado, ')', '', [rfReplaceAll]);
-    
-    // Garante que o número começa com 55
+    NumeroFormatado := Numero.Replace(' ', '')
+                             .Replace('+', '')
+                             .Replace('-', '')
+                             .Replace('(', '')
+                             .Replace(')', '');
+
     if not NumeroFormatado.StartsWith('55') then
       NumeroFormatado := '55' + NumeroFormatado;
 
-    // URL da API
-    URL := 'https://api.z-api.io/instances/3E0B7F00B4ED309A8A9402121E6AE94B/token/AE549C5B3C231D252C408415/send-text';
-
-    // Monta o JSON com a mensagem formatada
     Json := TStringStream.Create(
       Format('{"phone": "%s", "message": "%s"}', [NumeroFormatado, Mensagem]),
       TEncoding.UTF8
     );
-
-    try
-      // Log detalhado
-     // ShowMessage(
-      //  '=== DETALHES DA REQUISIÇÃO ===' + #13#10 +
-      //  'URL: ' + URL + #13#10 +
-      //  'Headers:' + #13#10 +
-      //  'Client-Token: ' + Http.Request.CustomHeaders.Values['Client-Token'] + #13#10 +
-      //  'Content-Type: ' + Http.Request.ContentType + #13#10 +
-      //  'Accept: ' + Http.Request.CustomHeaders.Values['Accept'] + #13#10 +
-      //  'Body:' + #13#10 +
+     // try
+      //  Log detalhado
+      //ShowMessage(
+        //'=== DETALHES DA REQUISIÇÃO ===' + #13#10 +
+       //'URL: ' + URL + #13#10 +
+       // 'Headers:' + #13#10 +
+       //'Client-Token: ' + Http.Request.CustomHeaders.Values['Client-Token'] + #13#10 +
+        //'Content-Type: ' + Http.Request.ContentType + #13#10 +
+        //'Accept: ' + Http.Request.CustomHeaders.Values['Accept'] + #13#10 +
+        //'Body:' + #13#10 +
         //'{"phone": "' + NumeroFormatado + '", "message": "' + Mensagem + '"}' + #13#10 +
-      //  '=========================='
+       //'=========================='
       //);
 
       // Tenta fazer a requisição
-      Response := Http.Post(URL, Json);
-      
-      ShowMessage('Resposta do servidor: ' + Response);
-      
-    except
-      on E: EIdHTTPProtocolException do
-      begin
-        ShowMessage(
-          '=== ERRO NA REQUISIÇÃO ===' + #13#10 +
-          'Mensagem: ' + E.Message + #13#10 +
-          'Código: ' + IntToStr(E.ErrorCode) + #13#10 +
-          'Resposta: ' + E.ErrorMessage + #13#10 +
-          'Headers enviados:' + #13#10 +
-          'Client-Token: ' + Http.Request.CustomHeaders.Values['Client-Token'] + #13#10 +
-          'Content-Type: ' + Http.Request.ContentType + #13#10 +
-          'Accept: ' + Http.Request.CustomHeaders.Values['Accept'] + #13#10 +
-          '========================'
-        );
-      end;
-      on E: Exception do
-        ShowMessage('Erro geral: ' + E.Message);
-    end;
-  finally
-    if Assigned(Json) then
-      Json.Free;
-    Http.Free;
-    SSL.Free;
+     // Response := Http.Post(URL, Json);
+
+     // ShowMessage('Resposta do servidor: ' + Response);
+
+     // finally
+
+    //  end;
+
+    Response := Http.Post(URL, Json);
+    ShowMessage('Resposta do servidor: ' + Response);
+  except
+    on E: EIdHTTPProtocolException do
+      ShowMessage('Erro HTTP: ' + E.Message + ' | Código: ' + IntToStr(E.ErrorCode));
+    on E: Exception do
+      ShowMessage('Erro geral: ' + E.Message);
   end;
+
+  Json.Free;
+  Http.Free;
+  SSL.Free;
+end;
+
+
+procedure TfrmAgendamento.filtrarAgendamentos(cliente, funcionario: string; data: TDate; usarData: Boolean);
+var
+  sqlBase: string;
+begin
+  dm.query_agendamentos.Close;
+  sqlBase := 'SELECT * FROM agendamentos WHERE 1=1';
+
+  if Trim(cliente) <> '' then
+    sqlBase := sqlBase + ' AND cliente LIKE :cliente';
+
+  if Trim(funcionario) <> '' then
+    sqlBase := sqlBase + ' AND funcionario LIKE :funcionario';
+
+  if usarData then
+    sqlBase := sqlBase + ' AND data = :data';
+
+  dm.query_agendamentos.SQL.Text := sqlBase;
+
+  if Pos(':cliente', sqlBase) > 0 then
+    dm.query_agendamentos.ParamByName('cliente').Value := cliente + '%';
+
+  if Pos(':funcionario', sqlBase) > 0 then
+    dm.query_agendamentos.ParamByName('funcionario').Value := funcionario + '%';
+
+  if usarData then
+    dm.query_agendamentos.ParamByName('data').AsDate := data;
+
+  dm.query_agendamentos.Open;
 end;
 
 procedure TfrmAgendamento.FormActivate(Sender: TObject);
@@ -401,11 +497,23 @@ begin
  EdtFuncionario.Text := nomeFunc;
 end;
 
+procedure TfrmAgendamento.FormCreate(Sender: TObject);
+begin
+  DateAgendamento.DateTime := Now; // Define a data/hora inicial
+
+  SpinHorasTrabalhadas.MinValue := 1;
+  SpinHorasTrabalhadas.MaxValue := 24;
+end;
+
 procedure TfrmAgendamento.FormShow(Sender: TObject);
 begin
      desabilitarCampos;
      dm.tb_agendamento.Active := true;
      listar;
+
+     SpinHorasTrabalhadas.MinValue := 1;
+     limpar;
+
 end;
 
 procedure TfrmAgendamento.habilitarCampos;

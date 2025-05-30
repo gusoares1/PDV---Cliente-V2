@@ -8,7 +8,7 @@ uses
   FireDAC.Stan.Pool, FireDAC.Stan.Async, FireDAC.Phys, FireDAC.Phys.MySQL,
   FireDAC.Phys.MySQLDef, FireDAC.VCLUI.Wait, Data.DB, FireDAC.Comp.Client,
   FireDAC.Stan.Param, FireDAC.DatS, FireDAC.DApt.Intf, FireDAC.DApt,
-  FireDAC.Comp.DataSet;
+  FireDAC.Comp.DataSet, Winapi.Windows, System.IniFiles;
 
 type
   Tdm = class(TDataModule)
@@ -22,13 +22,6 @@ type
     tb_funcionario: TFDTable;
     DSfuncionario: TDataSource;
     query_func: TFDQuery;
-    query_funcid: TFDAutoIncField;
-    query_funcnome: TStringField;
-    query_funccpf: TStringField;
-    query_functelefone: TStringField;
-    query_funcendereco: TStringField;
-    query_funccargo: TStringField;
-    query_funcdata: TDateField;
     tb_funcionarioid: TFDAutoIncField;
     tb_funcionarionome: TStringField;
     tb_funcionariocpf: TStringField;
@@ -60,9 +53,6 @@ type
     query_fornecedoresendereco: TStringField;
     query_fornecedoresdata: TDateField;
     query_fornecedorestelefone: TStringField;
-    tb_agendamento: TFDTable;
-    query_agendamentos: TFDQuery;
-    DsAgendamento: TDataSource;
     tb_uf: TFDTable;
     query_uf: TFDQuery;
     DsUF: TDataSource;
@@ -75,16 +65,6 @@ type
     query_ufid: TIntegerField;
     query_ufnome: TStringField;
     query_ufsigla: TStringField;
-    query_clienteid: TFDAutoIncField;
-    query_clientenome: TStringField;
-    query_clientedocumento: TStringField;
-    query_clientedata_nascimento: TDateField;
-    query_clientetelefone: TStringField;
-    query_clienteestado_id: TIntegerField;
-    query_clientecidade_id: TIntegerField;
-    query_clientebairro: TStringField;
-    query_clientecep: TStringField;
-    query_clienteendereco: TStringField;
     query_Listar_Cliente: TFDQuery;
     query_Listar_Clientenome: TStringField;
     query_Listar_Clientedocumento: TStringField;
@@ -99,15 +79,37 @@ type
     query_municipioid: TIntegerField;
     query_municipioufid: TIntegerField;
     query_municipionome: TStringField;
-    query_agendamentosid: TFDAutoIncField;
-    query_agendamentosdata: TDateField;
-    query_agendamentoshora: TTimeField;
-    query_agendamentosCliente: TStringField;
-    query_agendamentosConfirmacaoCliente: TShortintField;
-    query_agendamentosRealizado: TShortintField;
-    query_agendamentosDescricao: TStringField;
-    query_agendamentosFuncionario: TStringField;
-    query_agendamentoshoras_trabalhadas: TIntegerField;
+    tb_servicos: TFDTable;
+    query_servicos: TFDQuery;
+    DsServicos: TDataSource;
+    query_servicosid: TFDAutoIncField;
+    query_servicosnome: TStringField;
+    query_servicospreco: TBCDField;
+    query_servicostempo_estimado: TIntegerField;
+    query_servicosdescricao: TStringField;
+    DsAgendamentoServ: TDataSource;
+    query_agendamentoserv: TFDQuery;
+    tb_agendamentoserv: TFDTable;
+    query_agendamentoservidAgendamento: TIntegerField;
+    query_agendamentoservseqServico: TIntegerField;
+    query_agendamentoservnomeServico: TStringField;
+    query_agendamentoservpreco: TBCDField;
+    query_agendamentoservdesconto: TIntegerField;
+    query_aux: TFDQuery;
+    query_Listar_Clienteid: TFDAutoIncField;
+    DsFormaPagto: TDataSource;
+    tb_formapagto: TFDTable;
+    query_formapagto: TFDQuery;
+    tb_formapagtoidFormaPagamento: TFDAutoIncField;
+    tb_formapagtonome: TStringField;
+    tb_formapagtoparcela: TBooleanField;
+    tb_formapagtoativo: TBooleanField;
+    tb_agendamentopagto: TFDTable;
+    query_agendamentopagto: TFDQuery;
+    DsAgendamentoPagto: TDataSource;
+    query_listar_agen_pagto: TFDQuery;
+    DsListarPagto: TDataSource;
+    tb_agendamento: TFDTable;
     tb_agendamentoid: TFDAutoIncField;
     tb_agendamentodata: TDateField;
     tb_agendamentohora: TTimeField;
@@ -117,23 +119,64 @@ type
     tb_agendamentoRealizado: TShortintField;
     tb_agendamentoFuncionario: TStringField;
     tb_agendamentohoras_trabalhadas: TIntegerField;
-    tb_servicos: TFDTable;
-    query_servicos: TFDQuery;
-    DsServicos: TDataSource;
-    query_servicosid: TFDAutoIncField;
-    query_servicosnome: TStringField;
-    query_servicospreco: TBCDField;
-    query_servicosdescricao: TMemoField;
-    query_servicostempo_estimado: TIntegerField;
+    query_agendamentos: TFDQuery;
+    query_agendamentosid: TFDAutoIncField;
+    query_agendamentosdata: TDateField;
+    query_agendamentoshora: TTimeField;
+    query_agendamentosCliente: TStringField;
+    query_agendamentosFuncionario: TStringField;
+    query_agendamentosConfirmacaoCliente: TShortintField;
+    query_agendamentoshoras_trabalhadas: TIntegerField;
+    query_agendamentosRealizado: TShortintField;
+    query_agendamentosDescricao: TStringField;
+    DsAgendamento: TDataSource;
+    query_agendamentodiario: TFDQuery;
+    DsAgendamentoDiario: TDataSource;
+    query_servicosRealizado: TFDQuery;
+    DsServicosRealizado: TDataSource;
+    query_agendamentos_pendentes: TFDQuery;
+    DAgendamentosPendentes: TDataSource;
+    query_Faturamento_Servico: TFDQuery;
+    DsFaturamentoServico: TDataSource;
+    query_Pagamentos_Pendentes: TFDQuery;
+    DsPagamentosPendentes: TDataSource;
+    DsMetodosPagamento: TDataSource;
+    query_Metodos_Pagamento: TFDQuery;
+    DsFaturamentoMensal: TDataSource;
+    query_Faturamento_Mensal: TFDQuery;
+    query_Faturamento_MensalMes_Ano: TStringField;
+    query_Faturamento_MensalTotal_Liquido: TFMTBCDField;
+    query_Faturamento_MensalTotal_Recebido: TFMTBCDField;
+    query_Faturamento_MensalDiferenca: TFMTBCDField;
+    tb_config_whatsapp: TFDTable;
+    query_config_whatsapp: TFDQuery;
+    query_formapagtoidFormaPagamento: TFDAutoIncField;
+    query_formapagtonome: TStringField;
+    query_formapagtoparcela: TBooleanField;
+    query_formapagtoativo: TBooleanField;
     procedure DataModuleCreate(Sender: TObject);
     procedure query_agendamentosConfirmacaoClienteGetText(Sender: TField;
       var Text: string; DisplayText: Boolean);
     procedure query_agendamentosRealizadoGetText(Sender: TField;
       var Text: string; DisplayText: Boolean);
+    procedure query_formapagtoparcelaGetText(Sender: TField; var Text: string;
+      DisplayText: Boolean);
+    procedure query_formapagtoativoGetText(Sender: TField; var Text: string;
+      DisplayText: Boolean);
+    procedure query_Pagamentos_PendentesTotal_DevidoGetText(Sender: TField;
+      var Text: string; DisplayText: Boolean);
+    procedure query_Metodos_PagamentoTotalRecebidoGetText(Sender: TField;
+      var Text: string; DisplayText: Boolean);
+    procedure query_Faturamento_MensalTotal_LiquidoGetText(Sender: TField;
+      var Text: string; DisplayText: Boolean);
+    procedure query_Faturamento_MensalTotal_RecebidoGetText(Sender: TField;
+      var Text: string; DisplayText: Boolean);
+    procedure query_Faturamento_MensalDiferencaGetText(Sender: TField;
+      var Text: string; DisplayText: Boolean);
   private
-    { Private declarations }
+
   public
-    { Public declarations }
+   procedure LerIni(Conn: TFDConnection);
   end;
 
 var
@@ -154,6 +197,10 @@ var
   nomeUsuario : string;
   cargoUsuario : string;
 
+  idAgendamento: Integer;
+
+   LimparCamposFiltro: Boolean = False;
+
 implementation
 
 {%CLASSGROUP 'Vcl.Controls.TControl'}
@@ -161,14 +208,58 @@ implementation
 {$R *.dfm}
 
 procedure Tdm.DataModuleCreate(Sender: TObject);
+  var
+  AppDir: string;
 begin
-     fd.connected := true;
+   try
+  LerIni(fd);
+  fd.Connected := True;
+except
+  on E: Exception do
+  begin
+    // Aqui você bloqueia a exibição automática da mensagem de erro
+    // e pode fazer um tratamento customizado, como logar ou ignorar
+    // Ou simplesmente não mostrar nada:
+    // (deixe o bloco vazio para ignorar completamente o erro)
+  end;
+end;
+
+     // 1) Define o "Current Directory" para a pasta do EXE
+  SetCurrentDirectory(PChar(ExtractFilePath(ParamStr(0))));
+  // 2) Agora basta falar só o nome da DLL
+  FDPhysMySQLDriverLink1.VendorLib  := 'libmysql.dll';
+
+  AppDir := ExtractFilePath(ParamStr(0));
+  FDPhysMySQLDriverLink1.VendorHome := AppDir;
+  FDPhysMySQLDriverLink1.VendorLib  := 'libmysql.dll';
+
+end;
+
+procedure Tdm.LerIni(Conn: TFDConnection);
+var
+  Ini: TIniFile;
+  CaminhoINI: string;
+begin
+  CaminhoINI := ExtractFilePath(ParamStr(0)) + 'config.ini';
+  Ini := TIniFile.Create(CaminhoINI);
+  try
+    Conn.Params.Clear;
+    Conn.Params.DriverID := 'MySQL';
+    Conn.Params.Add('Server=' + Ini.ReadString('Conexao', 'Host', 'localhost'));
+    Conn.Params.Add('Port=' + Ini.ReadString('Conexao', 'Port', '3306'));
+    Conn.Params.Database := Ini.ReadString('Conexao', 'Database', '');
+    Conn.Params.UserName := Ini.ReadString('Conexao', 'User', '');
+    Conn.Params.Password := Ini.ReadString('Conexao', 'Password', '');
+    Conn.LoginPrompt := False;
+  finally
+    Ini.Free;
+  end;
 end;
 
 procedure Tdm.query_agendamentosConfirmacaoClienteGetText(Sender: TField;
   var Text: string; DisplayText: Boolean);
 begin
-  if Sender.AsInteger = 1 then
+  if Sender.AsBoolean  then
     Text := 'Sim'
   else
     Text := 'Não';
@@ -177,10 +268,77 @@ end;
 procedure Tdm.query_agendamentosRealizadoGetText(Sender: TField;
   var Text: string; DisplayText: Boolean);
 begin
-  if Sender.AsInteger = 1 then
+  if Sender.AsBoolean then
     Text := 'Sim'
   else
     Text := 'Não';
+end;
+
+procedure Tdm.query_Faturamento_MensalDiferencaGetText(Sender: TField;
+  var Text: string; DisplayText: Boolean);
+begin
+  if not Sender.IsNull then
+    Text := Format('R$ %.2f', [Sender.AsFloat])
+  else
+    Text := 'R$ 0,00';
+end;
+
+procedure Tdm.query_Faturamento_MensalTotal_LiquidoGetText(Sender: TField;
+  var Text: string; DisplayText: Boolean);
+begin
+  if not Sender.IsNull then
+    Text := Format('R$ %.2f', [Sender.AsFloat])
+  else
+    Text := 'R$ 0,00';
+end;
+
+procedure Tdm.query_Faturamento_MensalTotal_RecebidoGetText(Sender: TField;
+  var Text: string; DisplayText: Boolean);
+begin
+  if not Sender.IsNull then
+    Text := Format('R$ %.2f', [Sender.AsFloat])
+  else
+    Text := 'R$ 0,00';
+end;
+
+procedure Tdm.query_formapagtoativoGetText(Sender: TField; var Text: string;
+  DisplayText: Boolean);
+begin
+    begin
+  if Sender.AsBoolean then
+    Text := 'Sim'
+  else
+    Text := 'Não';
+    end;
+end;
+
+procedure Tdm.query_formapagtoparcelaGetText(Sender: TField; var Text: string;
+  DisplayText: Boolean);
+begin
+    begin
+  if Sender.AsBoolean then
+    Text := 'Sim'
+  else
+    Text := 'Não';
+    end;
+end;
+
+procedure Tdm.query_Metodos_PagamentoTotalRecebidoGetText(Sender: TField;
+  var Text: string; DisplayText: Boolean);
+begin
+  if not Sender.IsNull then
+    Text := Format('R$ %.2f', [Sender.AsFloat])
+  else
+    Text := 'R$ 0,00';
+end;
+
+procedure Tdm.query_Pagamentos_PendentesTotal_DevidoGetText(Sender: TField;
+  var Text: string; DisplayText: Boolean);
+begin
+  if not Sender.IsNull then
+    Text := Format('R$ %.2f', [Sender.AsFloat])
+  else
+    Text := 'R$ 0,00';
 end;
 
 end.

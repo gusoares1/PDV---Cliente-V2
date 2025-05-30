@@ -6,7 +6,7 @@ object FrmUsuario: TFrmUsuario
   Caption = 'Cadastro'
   ClientHeight = 494
   ClientWidth = 846
-  Color = clLightskyblue
+  Color = clCream
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
   Font.Height = -12

@@ -6,7 +6,7 @@ object FrmCargos: TFrmCargos
   Caption = 'Cargos'
   ClientHeight = 375
   ClientWidth = 574
-  Color = clLightskyblue
+  Color = clCream
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
   Font.Height = -12
@@ -200,7 +200,7 @@ object FrmCargos: TFrmCargos
   end
   object btnEditar: TSpeedButton
     Left = 464
-    Top = 192
+    Top = 183
     Width = 73
     Height = 41
     Cursor = crHandPoint

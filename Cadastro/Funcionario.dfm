@@ -7,7 +7,7 @@ object frmFuncionarios: TfrmFuncionarios
   Caption = 'Funcionarios'
   ClientHeight = 498
   ClientWidth = 763
-  Color = clLightskyblue
+  Color = clCream
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
   Font.Height = -12
@@ -501,21 +501,13 @@ object frmFuncionarios: TfrmFuncionarios
     TabOrder = 7
     Text = '(  )     -    '
   end
-  object cbCargo: TComboBox
-    Left = 492
-    Top = 200
-    Width = 145
-    Height = 23
-    Enabled = False
-    TabOrder = 8
-  end
   object DBGrid1: TDBGrid
     Left = 88
     Top = 248
     Width = 549
     Height = 120
     DataSource = dm.DSfuncionario
-    TabOrder = 9
+    TabOrder = 8
     TitleFont.Charset = DEFAULT_CHARSET
     TitleFont.Color = clWindowText
     TitleFont.Height = -12
@@ -523,5 +515,13 @@ object frmFuncionarios: TfrmFuncionarios
     TitleFont.Style = []
     OnCellClick = DBGrid1CellClick
     OnDblClick = DBGrid1DblClick
+  end
+  object cbCargo: TComboBox
+    Left = 492
+    Top = 200
+    Width = 145
+    Height = 23
+    Enabled = False
+    TabOrder = 9
   end
 end

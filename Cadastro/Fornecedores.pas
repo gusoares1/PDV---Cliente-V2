@@ -118,6 +118,8 @@ begin
   habilitarCampos;
   dm.tb_fornecedor.Insert;
   btnSalvar.Enabled := true;
+  btnEditar.Enabled := False;
+  btnExcluir.Enabled := False;
 end;
 
 procedure TFrmFornecedores.btnSalvarClick(Sender: TObject);

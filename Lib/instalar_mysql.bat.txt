@@ -1,0 +1,47 @@
+@echo off
+SETLOCAL
+
+SET MYSQLDIR="C:\Program Files (x86)\MySQL\MySQL Server 5.5"
+SET DATADIR=%MYSQLDIR%\data
+SET SERVICE=MySQL55
+
+REM Verifica se o serviço já está instalado
+sc query %SERVICE% >nul 2>&1
+IF %ERRORLEVEL% EQU 0 (
+    echo O serviço %SERVICE% já existe. Iniciando...
+    net start %SERVICE%
+) ELSE (
+    echo Instalando o serviço %SERVICE%...
+
+    REM Garante que o diretório de dados existe
+    IF NOT EXIST %DATADIR% (
+        mkdir %DATADIR%
+    )
+
+    REM Inicializa o banco (sem senha)
+    "%MYSQLDIR%\bin\mysqld.exe" --initialize-insecure --basedir=%MYSQLDIR% --datadir=%DATADIR%
+
+    REM Cria o serviço MySQL
+    "%MYSQLDIR%\bin\mysqld.exe" --install %SERVICE% --defaults-file="%MYSQLDIR%\my.ini"
+
+    REM Inicia o serviço
+    net start %SERVICE%
+)
+
+REM Aguarda alguns segundos para o serviço inicializar
+timeout /t 5 >nul
+
+REM Define a senha do root para 123
+echo Configurando senha do root...
+"%MYSQLDIR%\bin\mysqladmin.exe" -u root password 123
+
+REM Aguarda um pouco antes de importar
+timeout /t 2 >nul
+
+REM Importa o arquivo SQL
+echo Importando o banco de dados...
+"%MYSQLDIR%\bin\mysql.exe" -u root -p123 < "%~dp0pdv.sql"
+
+echo Finalizado.
+ENDLOCAL
+exit /b

@@ -5,7 +5,7 @@ interface
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.Imaging.jpeg, Vcl.ExtCtrls,
-  Vcl.Imaging.pngimage, Vcl.Buttons, Vcl.StdCtrls;
+  Vcl.Imaging.pngimage, Vcl.Buttons, Vcl.StdCtrls, System.IniFiles, FireDAC.Comp.Client;
 
 type
   TFrmLogin = class(TForm)
@@ -20,6 +20,7 @@ type
       var Resize: Boolean);
     procedure btnLoginClick(Sender: TObject);
     procedure FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
+    procedure FormShow(Sender: TObject);
   private
      procedure centralizarPainel;
      procedure login;
@@ -34,7 +35,7 @@ implementation
 
 {$R *.dfm}
 
-uses Menu, Usuarios, Modulo;
+uses Menu, Usuarios, Modulo, Banco;
 
 procedure TFrmLogin.btnLoginClick(Sender: TObject);
 begin
@@ -72,6 +73,38 @@ procedure TFrmLogin.FormKeyDown(Sender: TObject; var Key: Word;
 begin
  if key = 13 then
  login;
+end;
+
+procedure TFrmLogin.FormShow(Sender: TObject);
+begin
+  try
+
+
+    // Carrega os parâmetros do INI para a conexão
+    dm.LerIni(dm.fd);
+
+    // Tenta conectar
+    dm.fd.Connected := True;
+  except
+    on E: Exception do
+    begin
+      MessageDlg('Erro ao conectar com o banco de dados:' + sLineBreak + E.Message,
+        mtError, [mbOK], 0);
+
+      Application.CreateForm(TFrmBanco, FrmBanco);
+      FrmBanco.ShowModal;
+
+      try
+        // Tenta ler novamente e conectar após o usuário configurar
+        dm.LerIni(dm.fd);
+        dm.fd.Connected := True;
+      except
+        MessageDlg('Ainda não foi possível conectar. O programa será encerrado.',
+          mtError, [mbOK], 0);
+        Application.Terminate;
+      end;
+    end;
+  end;
 end;
 
 procedure TFrmLogin.login;

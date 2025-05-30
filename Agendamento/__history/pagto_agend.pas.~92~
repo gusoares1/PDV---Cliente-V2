@@ -1,0 +1,292 @@
+unit pagto_agend;
+
+interface
+
+uses
+  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
+  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Data.DB, Vcl.Grids, Vcl.DBGrids,
+  Vcl.StdCtrls, Vcl.Buttons, Vcl.NumberBox;
+
+type
+  TfrmPagtoAgendamento = class(TForm)
+    Label1: TLabel;
+    EdtNroAgen: TEdit;
+    EdtPrecoTotal: TEdit;
+    Label4: TLabel;
+    DBGrid1: TDBGrid;
+    btnNovo: TSpeedButton;
+    btnSalvar: TSpeedButton;
+    cbPagamento: TComboBox;
+    Label8: TLabel;
+    Label2: TLabel;
+    NumberBox1: TNumberBox;
+    btnExcluir: TSpeedButton;
+    btnFinalizar: TButton;
+    EdtPagamento: TEdit;
+    Label3: TLabel;
+    EdtPagar: TEdit;
+    Label5: TLabel;
+    procedure FormShow(Sender: TObject);
+    procedure btnNovoClick(Sender: TObject);
+    procedure btnSalvarClick(Sender: TObject);
+    procedure btnFinalizarClick(Sender: TObject);
+
+  private
+    { Private declarations }
+    procedure limpar;
+    procedure habilitarCampos;
+    procedure desabilitarCampos;
+    procedure calculartotal;
+
+    procedure associarCampos;
+
+     procedure listarPagamento;
+
+    procedure carregarCombobox;
+  public
+    { Public declarations }
+  end;
+
+var
+  frmPagtoAgendamento: TfrmPagtoAgendamento;
+
+implementation
+
+{$R *.dfm}
+
+uses
+  System.Math, Modulo, Vincular_Servicos, Agendamento;
+
+
+{ TfrmPagtoAgendamento }
+
+procedure TfrmPagtoAgendamento.associarCampos;
+begin
+
+  dm.tb_agendamentoserv.FieldByName('idAgendamento').value :=EdtNroAgen.Text;
+
+end;
+
+procedure TfrmPagtoAgendamento.btnFinalizarClick(Sender: TObject);
+begin
+  try
+    // Atualiza o agendamento como realizado
+    dm.query_agendamentos.Close;
+    dm.query_agendamentos.SQL.Clear;
+    dm.query_agendamentos.SQL.Text := 'UPDATE agendamento SET realizado = 1 WHERE id = :id';
+    dm.query_agendamentos.ParamByName('id').AsInteger := StrToInt(EdtNroAgen.Text);
+    dm.query_agendamentos.ExecSQL;
+
+    ShowMessage('Agendamento finalizado com sucesso!');
+
+    // Atualiza a lista no form principal (ou lista de agendamentos)
+    if Assigned(frmAgendamento) then
+    begin
+      frmVincularServicos.AtualizarListaAgendamentos; // você precisa criar esse método no outro form
+    end;
+
+    Close; // Fecha o formulário de pagamento
+  except
+    on E: Exception do
+      ShowMessage('Erro ao finalizar agendamento: ' + E.Message);
+  end;
+end;
+
+
+
+procedure TfrmPagtoAgendamento.btnNovoClick(Sender: TObject);
+var
+  valorTotal, totalJaPago, valorRestante: Double;
+begin
+  habilitarCampos;
+  dm.tb_agendamentopagto.Insert;
+  btnSalvar.Enabled := True;
+  btnExcluir.Enabled := False;
+
+  // Define 1 como valor padrão para parcelamento
+  NumberBox1.Value := 1;
+
+  // Pega o valor total (já está em EdtPrecoTotal no formato "R$ ...")
+  valorTotal := totalGeral;
+
+  // Calcula o total já pago
+  dm.query_agendamentopagto.Close;
+  dm.query_agendamentopagto.SQL.Text :=
+    'SELECT SUM(valor_pago) AS valor_pago ,idagendamento,tipo_pagamento, parcemento,data_pagamento  FROM agendamento_pagamento WHERE idAgendamento = :id';
+  dm.query_agendamentopagto.ParamByName('id').Value := StrToInt(EdtNroAgen.Text);
+  dm.query_agendamentopagto.Open;
+
+  totalJaPago := dm.query_agendamentopagto.FieldByName('valor_pago').AsFloat;
+
+  // Calcula valor restante
+  valorRestante := valorTotal - totalJaPago;
+
+  // Mostra no campo de pagamento
+  EdtPagar.Text := FormatFloat('0.00', valorRestante);
+end;
+
+procedure TfrmPagtoAgendamento.btnSalvarClick(Sender: TObject);
+var
+  valorPago: Double;
+  valorTotal, totalJaPago: Double;
+begin
+  // Validação
+  if Trim(EdtPagar.Text) = '' then
+  begin
+    ShowMessage('Informe um valor para pagar.');
+    Exit;
+  end;
+
+  valorPago := StrToFloatDef(StringReplace(EdtPagar.Text, '.', '.', [rfReplaceAll]), 0);
+  if valorPago <= 0 then
+  begin
+    ShowMessage('Valor do pagamento deve ser maior que zero.');
+    Exit;
+  end;
+
+  if cbPagamento.ItemIndex = -1 then
+  begin
+    ShowMessage('Selecione a forma de pagamento.');
+    Exit;
+  end;
+
+  // Pega total do agendamento
+  valorTotal := totalGeral;
+
+  // Calcula o total já pago
+  dm.query_agendamentopagto.Close;
+  dm.query_agendamentopagto.SQL.Text :=
+    'SELECT SUM(valor_pago) AS valor_pago ,idagendamento,tipo_pagamento, valor_pago, parcemento,data_pagamento  FROM agendamento_pagamento WHERE idAgendamento = :id';
+  dm.query_agendamentopagto.ParamByName('id').Value := StrToInt(EdtNroAgen.Text);
+  dm.query_agendamentopagto.Open;
+
+  totalJaPago := dm.query_agendamentopagto.FieldByName('valor_pago').AsFloat;
+
+  // Verifica se o valor ultrapassa o total
+  if totalJaPago + valorPago > valorTotal then
+  begin
+    ShowMessage('O valor informado ultrapassa o total do agendamento.');
+    Exit;
+  end;
+
+  // Insere o pagamento
+  dm.tb_agendamentopagto.Append;
+  dm.tb_agendamentopagto.FieldByName('idAgendamento').AsInteger := StrToInt(EdtNroAgen.Text);
+  dm.tb_agendamentopagto.FieldByName('tipo_pagamento').AsString := cbPagamento.Text;
+  dm.tb_agendamentopagto.FieldByName('valor_pago').AsFloat := valorPago;
+  dm.tb_agendamentopagto.FieldByName('parcemento').AsInteger := 1; // ou outro valor conforme necessário
+  dm.tb_agendamentopagto.FieldByName('data_pagamento').AsDateTime := Now;
+  dm.tb_agendamentopagto.Post;
+
+  ShowMessage('Pagamento registrado com sucesso.');
+
+  // Atualiza valor já pago
+  dm.query_agendamentopagto.Close;
+  dm.query_agendamentopagto.Open;
+
+  totalJaPago := dm.query_agendamentopagto.FieldByName('valor_pago').AsFloat;
+  EdtPagamento.Text := FormatFloat('R$ #,##0.00', totalJaPago);
+
+  // Limpa campos
+  EdtPagar.Text := '';
+  cbPagamento.ItemIndex := -1;
+
+  // Finaliza se pago
+  if SameValue(totalJaPago, valorTotal, 0.01) then
+  begin
+    ShowMessage('Pagamento finalizado!');
+    btnSalvar.Enabled := False;
+    btnFinalizar.Enabled := True;
+  end;
+end;
+
+procedure TfrmPagtoAgendamento.calculartotal;
+var
+  totalServicos, totalDescontos: Double;
+begin
+  totalServicos := 0;
+  totalDescontos := 0;
+
+  dm.query_agendamentoserv.Close;
+  dm.query_agendamentoserv.SQL.Text := 'SELECT * FROM agendamento_servicos WHERE idAgendamento = :idAg';
+  dm.query_agendamentoserv.ParamByName('idAg').Value := idAgendamento;
+  dm.query_agendamentoserv.Open;
+
+  // Soma preços e descontos
+  while not dm.query_agendamentoserv.Eof do
+  begin
+    totalServicos := totalServicos + dm.query_agendamentoserv.FieldByName('preco').AsFloat;
+
+    if not dm.query_agendamentoserv.FieldByName('desconto').IsNull then
+      totalDescontos := totalDescontos + dm.query_agendamentoserv.FieldByName('desconto').AsFloat;
+
+    dm.query_agendamentoserv.Next;
+  end;
+
+  // Calcula total líquido
+  totalGeral := totalServicos - totalDescontos;
+  EdtPrecoTotal.Text := FormatFloat('R$ #,##0.00', totalGeral);
+end;
+
+
+procedure TfrmPagtoAgendamento.carregarCombobox;
+begin
+  dm.query_formapagto.Close;
+  dm.query_formapagto.open;
+  if not dm.query_formapagto.IsEmpty then
+  begin
+    while not dm.query_formapagto.Eof do
+    begin
+      cbPagamento.items.add(dm.query_formapagto.FieldByName('nome').AsString);
+       dm.query_formapagto.Next;
+    end;
+
+  end;
+
+end;
+
+procedure TfrmPagtoAgendamento.desabilitarCampos;
+begin
+    cbPagamento.Enabled := false;
+    edtpagar.Enabled := false;
+    EdtPrecoTotal.Enabled :=false;
+    EdtNroAgen.Enabled := false;
+end;
+
+procedure TfrmPagtoAgendamento.FormShow(Sender: TObject);
+begin
+    EdtNroAgen.Text := IntToStr(idAgendamento);
+
+     calcularTotal;
+     desabilitarCampos;
+     dm.tb_agendamentopagto.Active := true;
+     carregarCombobox;
+    // cbServicos.itemIndex := 0;
+    listarPagamento;
+
+    DBGrid1.Columns[0].Title.Caption := 'Tipo Pagamento';  // se souber o índice
+    DBGrid1.Columns[1].Title.Caption := 'Valor pagamento';  // se souber o índice
+end;
+
+procedure TfrmPagtoAgendamento.habilitarCampos;
+begin
+    cbPagamento.Enabled := true;
+    edtpagar.Enabled := true;
+
+end;
+
+procedure TfrmPagtoAgendamento.limpar;
+begin
+
+end;
+
+
+procedure TfrmPagtoAgendamento.listarPagamento;
+begin
+  dm.query_agendamentopagto.sql.Clear;
+  dm.query_agendamentopagto.sql.add('select tipo_pagamento, valor_pago from agendamento_pagamento where idagendamento = :idAg');
+  dm.query_agendamentopagto.ParamByName('idAg').AsInteger := idAgendamento;
+  dm.query_agendamentopagto.Open();
+end;
+
+end.

@@ -1,0 +1,87 @@
+unit Filtrar;
+
+interface
+
+uses
+  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
+  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.ComCtrls, Vcl.StdCtrls, Vcl.Buttons;
+
+type
+  TFrmFiltroAgendamento = class(TForm)
+    Label2: TLabel;
+    btnBuscarFuncionario: TSpeedButton;
+    Label1: TLabel;
+    btnBuscarCliente: TSpeedButton;
+    Label5: TLabel;
+    EdtClienteFiltro: TEdit;
+    DateFiltro: TDateTimePicker;
+    EdtFuncionarioFiltro: TEdit;
+    btnAplicar: TButton;
+    btnCancelar: TButton;
+    ChkUsarData: TCheckBox;
+    BtnLimpar: TButton;
+    procedure btnBuscarClienteClick(Sender: TObject);
+    procedure btnBuscarFuncionarioClick(Sender: TObject);
+    procedure btnAplicarClick(Sender: TObject);
+    procedure btnCancelarClick(Sender: TObject);
+
+    procedure FormCreate(Sender: TObject);
+    procedure FormActivate(Sender: TObject);
+  private
+  public
+  var
+
+  end;
+
+var
+  FrmFiltroAgendamento: TFrmFiltroAgendamento;
+
+implementation
+
+{$R *.dfm}
+
+uses Cliente, Funcionario, Modulo;
+
+procedure TFrmFiltroAgendamento.BtnAplicarClick(Sender: TObject);
+begin
+  ModalResult := mrOk;
+end;
+
+procedure TFrmFiltroAgendamento.btnBuscarClienteClick(Sender: TObject);
+begin
+  chamada2 :='Cliente';
+  FrmCliente := TFrmCliente.Create(self);
+  FrmCliente.Show;
+end;
+
+procedure TFrmFiltroAgendamento.btnBuscarFuncionarioClick(Sender: TObject);
+begin
+  chamada :='func';
+  FrmFuncionarios := TFrmFuncionarios.Create(self);
+  FrmFuncionarios.Show;
+end;
+
+procedure TFrmFiltroAgendamento.btnCancelarClick(Sender: TObject);
+begin
+       ModalResult := mrCancel;
+end;
+
+
+
+procedure TFrmFiltroAgendamento.FormActivate(Sender: TObject);
+begin
+
+    if nomeCliente <> '' then
+      EdtClienteFiltro.Text := nomeCliente;
+
+    if nomeFunc <> '' then
+      EdtFuncionarioFiltro.Text := nomeFunc;
+end;
+
+procedure TFrmFiltroAgendamento.FormCreate(Sender: TObject);
+begin
+    DateFiltro.Date := Date;
+end;
+
+
+end.

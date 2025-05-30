@@ -74,6 +74,7 @@ var
 
   id : string;
   cpfAntigo : string;
+  id_cliente_selecionado: Integer;
 
 
 implementation
@@ -138,7 +139,10 @@ begin
   end;
 
   // Aqui entra o modo de edição do dataset correto
-  dm.tb_cliente.Edit;
+  if dm.tb_cliente.Locate('id', id_cliente_selecionado, []) then
+  begin
+    dm.tb_cliente.Edit;
+
 
   dm.tb_cliente.FieldByName('nome').Value := EdtNome.Text;
   dm.tb_cliente.FieldByName('documento').Value := EdtCPF.Text;
@@ -157,6 +161,7 @@ begin
   dm.tb_cliente.Post;
 
   MessageDlg('Editado com sucesso!', TMsgDlgType.mtInformation, mbOKCancel, 0);
+  end;
 
   limpar;
   desabilitarCampos;
@@ -186,6 +191,9 @@ begin
   dm.tb_cliente.Insert;
   habilitarCampos;
   btnSalvar.Enabled := true;
+  btnEditar.Enabled := False;
+  btnExcluir.Enabled := False;
+  limpar;
 end;
 
 procedure TFrmCliente.btnSalvarClick(Sender: TObject);
@@ -322,6 +330,9 @@ begin
   btnExcluir.Enabled := True;
   dm.tb_cliente.Edit;
 
+  id_cliente_selecionado := dm.query_Listar_Cliente.FieldByName('id').AsInteger;
+
+
   if not dm.query_Listar_Cliente.FieldByName('nome').IsNull then
     EdtNome.Text := dm.query_Listar_Cliente.FieldByName('nome').AsString;
 
@@ -399,6 +410,8 @@ dm.tb_cliente.Active := true;
 
   if not dm.query_uf.Active then
     dm.query_uf.Open;
+
+EdtCPF.MaxLength := 14; // ou 18 COM pontuação
 
 listar
 end;

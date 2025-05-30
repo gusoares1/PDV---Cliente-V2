@@ -6,7 +6,7 @@ object FrmFornecedores: TFrmFornecedores
   Caption = 'Fornecedores'
   ClientHeight = 427
   ClientWidth = 642
-  Color = clMoneyGreen
+  Color = clCream
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
   Font.Height = -11

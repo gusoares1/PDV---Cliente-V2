@@ -1,0 +1,66 @@
+unit parametro;
+
+interface
+
+uses
+  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
+  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.Buttons;
+
+type
+  TFrmParametro = class(TForm)
+    Label2: TLabel;
+    Label1: TLabel;
+    edtToken: TEdit;
+    edtURL: TEdit;
+    Label5: TLabel;
+    btnSalvar: TSpeedButton;
+    procedure btnSalvarClick(Sender: TObject);
+  private
+    { Private declarations }
+  public
+    procedure CarregarConfiguracoesWhatsApp(var url, token: string);
+  end;
+
+var
+  FrmParametro: TFrmParametro;
+
+implementation
+
+{$R *.dfm}
+
+uses Modulo;
+
+procedure TFrmParametro.btnSalvarClick(Sender: TObject);
+begin
+  query_config_whatsapp.Close;
+  query_config_whatsapp.SQL.Text := 'DELETE FROM config_whatsapp';
+  query_config_whatsapp.ExecSQL;
+
+  query_config_whatsapp.SQL.Text :=
+    'INSERT INTO config_whatsapp (api_url, client_token) VALUES (:url, :token)';
+  query_config_whatsapp.ParamByName('url').AsString := edtURL.Text;
+  query_config_whatsapp.ParamByName('token').AsString := edtToken.Text;
+  query_config_whatsapp.ExecSQL;
+
+  ShowMessage('Configurações salvas com sucesso!');
+end;
+
+procedure TFrmParametro.CarregarConfiguracoesWhatsApp(var url, token: string);
+begin
+  dm.query_config_whatsapp.Close;
+  dm.query_config_whatsapp.SQL.Text := 'SELECT api_url, client_token FROM config_whatsapp LIMIT 1';
+  dm.query_config_whatsapp.Open;
+
+  if not dm.query_config_whatsapp.IsEmpty then
+  begin
+    url := dm.query_config_whatsapp.FieldByName('api_url').AsString;
+    token := dm.query_config_whatsapp.FieldByName('client_token').AsString;
+  end
+  else
+  begin
+    url := '';
+    token := '';
+  end;
+end;
+
+end.

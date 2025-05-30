@@ -23,12 +23,12 @@ type
     Label4: TLabel;
     Label5: TLabel;
     Label6: TLabel;
-    cbCargo: TComboBox;
     DBGrid1: TDBGrid;
     btnNovo: TSpeedButton;
     btnSalvar: TSpeedButton;
     btnEditar: TSpeedButton;
     btnExcluir: TSpeedButton;
+    cbCargo: TComboBox;
     procedure FormShow(Sender: TObject);
     procedure btnNovoClick(Sender: TObject);
     procedure btnSalvarClick(Sender: TObject);
@@ -83,87 +83,84 @@ begin
 end;
 
 procedure TfrmFuncionarios.btnEditarClick(Sender: TObject);
-begin
 var
-  cpf : string;
+  cpf: string;
 begin
-    dm.tb_funcionario.Edit;
-    if Trim(EdtNome.Text) = '' then
+  // Validações
+  if Trim(EdtNome.Text) = '' then
   begin
-      MessageDlg('Preencha o Cargo', TMsgDlgType.mtInformation, mbOKCancel, 0);
-      EdtNome.SetFocus;
-      exit;
-  end;
-end;
-    if Trim(Edtcpf.Text) = '' then
-  begin
-      MessageDlg('Preencha o Cpf', TMsgDlgType.mtInformation, mbOKCancel, 0);
-      Edtcpf.SetFocus;
-      exit;
+    MessageDlg('Preencha o Nome', TMsgDlgType.mtInformation, mbOKCancel, 0);
+    EdtNome.SetFocus;
+    Exit;
   end;
 
-      if Trim(EdtNome.Text) = '' then
+  if Trim(EdtCPF.Text) = '' then
   begin
-      MessageDlg('Preencha o Nome', TMsgDlgType.mtInformation, mbOKCancel, 0);
-      EdtNome.SetFocus;
-      exit;
+    MessageDlg('Preencha o CPF', TMsgDlgType.mtInformation, mbOKCancel, 0);
+    EdtCPF.SetFocus;
+    Exit;
   end;
 
+  if Trim(EdtEndereco.Text) = '' then
+  begin
+    MessageDlg('Preencha o Endereço', TMsgDlgType.mtInformation, mbOKCancel, 0);
+    EdtEndereco.SetFocus;
+    Exit;
+  end;
+
+  if Trim(cbCargo.Text) = '' then
+  begin
+    MessageDlg('Preencha o Cargo', TMsgDlgType.mtInformation, mbOKCancel, 0);
+    cbCargo.SetFocus;
+    Exit;
+  end;
+
+  // Verifica se CPF foi alterado e se já existe
   if cpfAntigo <> EdtCPF.Text then
   begin
-        // VERIFICAR SE O CARGO JA ESTA CADASTRADO
-      dm.query_func.sql.Clear;
-      dm.query_func.sql.add('select * from funcionarios where cpf =' + QuotedStr(trim(EdtNome.Text)));
-      dm.query_func.Open();
+    dm.query_func.Close;
+    dm.query_func.SQL.Clear;
+    dm.query_func.SQL.Add('SELECT * FROM funcionarios WHERE cpf = :cpf');
+    dm.query_func.ParamByName('cpf').Value := Trim(EdtCPF.Text);
+    dm.query_func.Open;
 
-      if not dm.query_func.IsEmpty then
-        begin
-          cpf := dm.query_func['cpf'];
-          MessageDlg('O cpf ' + cpf + ' ja esta salvo', TMsgDlgType.mtInformation, mbOKCancel, 0);
-          edtNome.Text := '';
-          EdtNome.SetFocus;
-          exit;
-        end;
+    if not dm.query_func.IsEmpty then
+    begin
+      cpf := dm.query_func.FieldByName('cpf').AsString;
+      MessageDlg('O CPF ' + cpf + ' já está salvo', TMsgDlgType.mtInformation, [mbOK], 0);
+      EdtCPF.Text := '';
+      EdtCPF.SetFocus;
+      Exit;
+    end;
   end;
 
-
-
-  associarCampos;
-  dm.tb_funcionario.Post;
-  messageDlg('Salvo com sucesso',mtInformation,mbOKCancel,0);
-  limpar;
-  desabilitarCampos;
-  listar;
-
-   associarCampos;
-  dm.query_func.close;
-  dm.query_func.sql.Clear;
-  dm.query_func.sql.add('UPDATE funcionarios set nome = :nome, cpf = :cpf,endereco = :endereco, telefone = :telefone, cargo = :cargo where id = :id');
-  dm.query_func.ParamByName('nome').Value := edtNome.Text;
-  dm.query_func.ParamByName('cpf').Value := edtcpf.Text;
-  dm.query_func.ParamByName('endereco').Value := edtendereco.Text;
-  dm.query_func.ParamByName('telefone').Value := edttelefone.Text;
-  dm.query_func.ParamByName('cargo').Value := cbcargo.Text;
+  // Atualiza dados no banco
+  dm.query_func.Close;
+  dm.query_func.SQL.Clear;
+  dm.query_func.SQL.Add('UPDATE funcionarios SET nome = :nome, cpf = :cpf, endereco = :endereco, telefone = :telefone, cargo = :cargo WHERE id = :id');
+  dm.query_func.ParamByName('nome').Value := EdtNome.Text;
+  dm.query_func.ParamByName('cpf').Value := EdtCPF.Text;
+  dm.query_func.ParamByName('endereco').Value := EdtEndereco.Text;
+  dm.query_func.ParamByName('telefone').Value := EdtTelefone.Text;
+  dm.query_func.ParamByName('cargo').Value := cbCargo.Text;
   dm.query_func.ParamByName('id').Value := id;
   dm.query_func.ExecSQL;
 
-  dm.query_usuarios.close;
-  dm.query_usuarios.sql.Clear;
-  dm.query_usuarios.sql.add('UPDATE usuarios set cargo = :cargo where id_funcionario = :id');
-  dm.query_usuarios.ParamByName('cargo').Value := cbcargo.Text;
+  // Atualiza o cargo na tabela de usuários
+  dm.query_usuarios.Close;
+  dm.query_usuarios.SQL.Clear;
+  dm.query_usuarios.SQL.Add('UPDATE usuarios SET cargo = :cargo WHERE id_funcionario = :id');
+  dm.query_usuarios.ParamByName('cargo').Value := cbCargo.Text;
   dm.query_usuarios.ParamByName('id').Value := id;
   dm.query_usuarios.ExecSQL;
 
-
-
-  btnEditar.Enabled := false;
-  btnExcluir.Enabled := false;
+  // Interface
+  MessageDlg('Editado com sucesso!', TMsgDlgType.mtInformation, [mbOK], 0);
+  btnEditar.Enabled := False;
+  btnExcluir.Enabled := False;
   limpar;
   desabilitarCampos;
   listar;
-  MessageDlg('Editado com sucesso!', TMsgDlgType.mtInformation, mbOKCancel, 0);
-
-
 end;
 
 procedure TfrmFuncionarios.btnExcluirClick(Sender: TObject);
@@ -197,10 +194,17 @@ end;
 
 procedure TfrmFuncionarios.btnNovoClick(Sender: TObject);
 begin
+    // Se estiver editando, cancela
+  if dm.tb_funcionario.State in [dsEdit] then
+    dm.tb_funcionario.Cancel;
+
   dm.tb_funcionario.Insert;
   habilitarCampos;
   dm.tb_funcionario.Insert;
   btnSalvar.Enabled := true;
+  btnEditar.Enabled := False;
+  btnExcluir.Enabled := False;
+  limpar;
 end;
 
 procedure TfrmFuncionarios.btnSalvarClick(Sender: TObject);
@@ -290,6 +294,10 @@ end;
 
 procedure TfrmFuncionarios.DBGrid1CellClick(Column: TColumn);
 begin
+         // Se estiver editando, cancela
+  if dm.tb_funcionario.State in [dsInsert] then
+    dm.tb_funcionario.Cancel;
+
      habilitarCampos;
      btnEditar.Enabled := true;
      btnExcluir.Enabled := true;
@@ -355,7 +363,6 @@ end;
 
 procedure TfrmFuncionarios.FormShow(Sender: TObject);
 begin
-
      desabilitarCampos;
      dm.tb_funcionario.Active := true;
      carregarCombobox;

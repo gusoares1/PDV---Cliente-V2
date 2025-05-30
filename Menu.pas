@@ -4,7 +4,7 @@ interface
 
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
-  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.Menus;
+  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.Menus, Vcl.StdCtrls, Vcl.ExtCtrls;
 
 type
   TfrmMenu = class(TForm)
@@ -14,13 +14,22 @@ type
     Relatorios1: TMenuItem;
     Sair1: TMenuItem;
     Produtos1: TMenuItem;
-    fornecedores1: TMenuItem;
     Usuarios1: TMenuItem;
     Funcionarios1: TMenuItem;
     Funcionarios2: TMenuItem;
     Sair2: TMenuItem;
     Cliente2: TMenuItem;
     Agendamento2: TMenuItem;
+    Formadepagamento1: TMenuItem;
+    RelatoriosOperacionais1: TMenuItem;
+    RelatriosFinanceiros1: TMenuItem;
+    BtnEnviarWhatsappAgendamento: TButton;
+    Label1: TLabel;
+    Label2: TLabel;
+    btnEnviarFuncionarios: TButton;
+    Panel1: TPanel;
+    Con1: TMenuItem;
+    Parametro1: TMenuItem;
     procedure Usuarios1Click(Sender: TObject);
     procedure Funcionarios1Click(Sender: TObject);
     procedure Funcionarios2Click(Sender: TObject);
@@ -30,8 +39,15 @@ type
     procedure Agendamento2Click(Sender: TObject);
     procedure Cliente2Click(Sender: TObject);
     procedure Produtos1Click(Sender: TObject);
+    procedure teste1Click(Sender: TObject);
+    procedure Formadepagamento1Click(Sender: TObject);
+    procedure RelatoriosOperacionais1Click(Sender: TObject);
+    procedure RelatriosFinanceiros1Click(Sender: TObject);
+    procedure BtnEnviarWhatsappAgendamentoClick(Sender: TObject);
+    procedure btnEnviarFuncionariosClick(Sender: TObject);
+    procedure Parametro1Click(Sender: TObject);
   private
-    { Private declarations }
+
   public
     { Public declarations }
   end;
@@ -44,7 +60,8 @@ implementation
 {$R *.dfm}
 
 uses Usuarios, Funcionario, Cargos, Modulo, Fornecedores, login, Agendamento,
-  Cliente, Servicos;
+  Cliente, Servicos, Vincular_Servicos, forma_pagamento,
+  Relatorios_Operacionais, Relatorios_Financeiros, parametro;
 
 procedure TfrmMenu.Agendamento2Click(Sender: TObject);
 begin
@@ -52,10 +69,152 @@ begin
     frmAgendamento.ShowModal;
 end;
 
+procedure TfrmMenu.BtnEnviarWhatsappAgendamentoClick(Sender: TObject);
+var
+  nomeCliente, telefoneCliente, nomeFuncionario, Mensagem: string;
+begin
+  try
+    dm.query_agendamentos.Close;
+    dm.query_agendamentos.SQL.Text :=
+      'SELECT * FROM agendamentos WHERE data = :data';
+    dm.query_agendamentos.ParamByName('data').AsDate := now;
+    dm.query_agendamentos.Open;
+
+    while not dm.query_agendamentos.Eof do
+    begin
+      nomeCliente := dm.query_agendamentos.FieldByName('Cliente').AsString;
+      nomeFuncionario := dm.query_agendamentos.FieldByName('Funcionario').AsString;
+
+      // Busca o telefone do cliente
+      dm.query_cliente.Close;
+      dm.query_cliente.SQL.Text :=
+        'SELECT telefone FROM cliente WHERE nome = :nome';
+      dm.query_cliente.ParamByName('nome').AsString := nomeCliente;
+      dm.query_cliente.Open;
+
+      telefoneCliente := dm.query_cliente.FieldByName('telefone').AsString;
+
+      if (telefoneCliente <> '') and (nomeCliente <> '') and (nomeFuncionario <> '') then
+      begin
+        Mensagem := Format('Olá %s! Seu agendamento está confirmado para %s às %s com %s.',
+          [nomeCliente,
+           FormatDateTime('dd/mm/yyyy', dm.query_agendamentos.FieldByName('data').AsDateTime),
+           FormatDateTime('hh:nn', dm.query_agendamentos.FieldByName('hora').AsDateTime),
+           nomeFuncionario]);
+
+        frmAgendamento.EnviarMensagemWhatsApp(telefoneCliente, Mensagem);
+
+      end;
+
+      dm.query_agendamentos.Next;
+    end;
+
+    MessageDlg('Mensagens enviadas para os clientes.', mtInformation, [mbOK], 0);
+  except
+    on E: Exception do
+      MessageDlg('Erro: ' + E.Message, mtError, [mbOK], 0);
+  end;
+end;
+
+procedure TfrmMenu.btnEnviarFuncionariosClick(Sender: TObject);
+var
+  nomeFuncionario, telefoneFuncionario, nomeCliente, horaStr: string;
+  enderecoCliente, cepCliente: string;
+  funcionarioAnterior, listaClientes, Mensagem: string;
+begin
+  try
+    dm.query_agendamentos.Close;
+    dm.query_agendamentos.SQL.Text :=
+      'SELECT a.id,a.data, a.hora,a.descricao, confirmacaoCliente, a.horas_trabalhadas, a.realizado, a.Funcionario, a.Cliente, a.hora, c.endereco, c.cep ' +
+      'FROM agendamentos a ' +
+      'JOIN cliente c ON a.Cliente = c.nome ' + // se usar ID, troque por ON a.cliente_id = c.id
+      'WHERE a.data = :data ' +
+      'ORDER BY a.Funcionario, a.hora';
+    dm.query_agendamentos.ParamByName('data').AsDate := Date;
+    dm.query_agendamentos.Open;
+
+    funcionarioAnterior := '';
+    listaClientes := '';
+
+    while not dm.query_agendamentos.Eof do
+    begin
+      nomeFuncionario := dm.query_agendamentos.FieldByName('Funcionario').AsString;
+      nomeCliente := dm.query_agendamentos.FieldByName('Cliente').AsString;
+      horaStr := FormatDateTime('hh:nn', dm.query_agendamentos.FieldByName('hora').AsDateTime);
+      enderecoCliente := dm.query_agendamentos.FieldByName('endereco').AsString;
+      cepCliente := dm.query_agendamentos.FieldByName('cep').AsString;
+
+      // Se mudou de funcionário, envia a mensagem anterior
+      if nomeFuncionario <> funcionarioAnterior then
+      begin
+        if (funcionarioAnterior <> '') and (listaClientes <> '') then
+        begin
+          // Buscar telefone do funcionário anterior
+          dm.query_cliente.Close;
+          dm.query_cliente.SQL.Text :=
+            'SELECT telefone FROM funcionarios WHERE nome = :nome';
+          dm.query_cliente.ParamByName('nome').AsString := funcionarioAnterior;
+          dm.query_cliente.Open;
+
+          telefoneFuncionario := dm.query_cliente.FieldByName('telefone').AsString;
+
+          if telefoneFuncionario <> '' then
+          begin
+            Mensagem := Format('Olá %s! Seus agendamentos para hoje são:%s',
+              [funcionarioAnterior, listaClientes]);
+            frmAgendamento.EnviarMensagemWhatsApp(telefoneFuncionario, Mensagem);
+          end;
+        end;
+
+        funcionarioAnterior := nomeFuncionario;
+        listaClientes := '';
+      end;
+
+      // Adiciona cliente com endereço e cep na lista
+      listaClientes := listaClientes + sLineBreak +
+        '- ' + horaStr + ' com ' + nomeCliente +
+        ' | Endereço: ' + enderecoCliente +
+        ' | CEP: ' + cepCliente;
+
+      dm.query_agendamentos.Next;
+    end;
+
+    // Envia para o último funcionário
+    if (funcionarioAnterior <> '') and (listaClientes <> '') then
+    begin
+      dm.query_cliente.Close;
+      dm.query_cliente.SQL.Text :=
+        'SELECT telefone FROM funcionarios WHERE nome = :nome';
+      dm.query_cliente.ParamByName('nome').AsString := funcionarioAnterior;
+      dm.query_cliente.Open;
+
+      telefoneFuncionario := dm.query_cliente.FieldByName('telefone').AsString;
+
+      if telefoneFuncionario <> '' then
+      begin
+        Mensagem := Format('Olá %s! Seus agendamentos para hoje são:%s',
+          [funcionarioAnterior, listaClientes]);
+        frmAgendamento.EnviarMensagemWhatsApp(telefoneFuncionario, Mensagem);
+      end;
+    end;
+
+    MessageDlg('Mensagens enviadas para os funcionários.', mtInformation, [mbOK], 0);
+  except
+    on E: Exception do
+      MessageDlg('Erro: ' + E.Message, mtError, [mbOK], 0);
+  end;
+end;
+
 procedure TfrmMenu.Cliente2Click(Sender: TObject);
 begin
       FrmCliente := TFrmCliente.Create(self);
       FrmCliente.ShowModal;
+end;
+
+procedure TfrmMenu.Formadepagamento1Click(Sender: TObject);
+begin
+ FrmFormaPgto := TFrmFormaPgto.Create(self);
+ FrmFormaPgto.showModal;
 end;
 
 procedure TfrmMenu.FormShow(Sender: TObject);
@@ -79,15 +238,39 @@ begin
   FrmCargos.ShowModal;
 end;
 
+procedure TfrmMenu.Parametro1Click(Sender: TObject);
+begin
+  FrmParametro := TFrmParametro.create(self);
+  FrmParametro.showModal;
+end;
+
 procedure TfrmMenu.Produtos1Click(Sender: TObject);
 begin
   FrmServico := TFrmServico.Create(self);
   FrmServico.ShowModal;
 end;
 
+procedure TfrmMenu.RelatoriosOperacionais1Click(Sender: TObject);
+begin
+ frmRelatoriosOperacionais := TfrmRelatoriosOperacionais.Create(self);
+ frmRelatoriosOperacionais.ShowModal;
+end;
+
+procedure TfrmMenu.RelatriosFinanceiros1Click(Sender: TObject);
+begin
+     FrmRelatorios_Financeiros := TFrmRelatorios_Financeiros.create(self);
+     FrmRelatorios_Financeiros.ShowModal;
+end;
+
 procedure TfrmMenu.Sair2Click(Sender: TObject);
 begin
 close;
+end;
+
+procedure TfrmMenu.teste1Click(Sender: TObject);
+begin
+frmAgendamentoServ :=TfrmAgendamentoServ.create(self);
+frmAgendamentoServ.ShowModal;
 end;
 
 procedure TfrmMenu.fornecedores1Click(Sender: TObject);

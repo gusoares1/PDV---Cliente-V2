@@ -80,6 +80,8 @@
         <VerInfo_Keys>CompanyName=;FileDescription=$(MSBuildProjectName);FileVersion=1.0.0.0;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProgramID=com.embarcadero.$(MSBuildProjectName);ProductName=$(MSBuildProjectName);ProductVersion=1.0.0.0;Comments=</VerInfo_Keys>
         <VerInfo_Locale>1033</VerInfo_Locale>
         <Manifest_File>$(BDS)\bin\default_app.manifest</Manifest_File>
+        <PostBuildEvent><![CDATA[xcopy /Y "$(PROJECTDIR)\Lib\libmysql.dll" "$(OUTPUTDIR)\"
+$(PostBuildEvent)]]></PostBuildEvent>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Base_Win64)'!=''">
         <DCC_UsePackage>vclwinx;fmx;vclie;DbxCommonDriver;bindengine;IndyIPCommon;VCLRESTComponents;FireDACCommonODBC;FireDACCommonDriver;appanalytics;IndyProtocols;vclx;IndyIPClient;dbxcds;vcledge;bindcompvclwinx;bindcompfmx;inetdb;FireDACSqliteDriver;DbxClientDriver;soapmidas;vclactnband;fmxFireDAC;dbexpress;DBXMySQLDriver;VclSmp;inet;vcltouch;fmxase;dbrtl;fmxdae;FireDACMSAccDriver;CustomIPTransport;vcldsnap;DBXInterBaseDriver;IndySystem;Skia.Package.VCL;vcldb;vclFireDAC;bindcomp;FireDACCommon;IndyCore;RESTBackendComponents;bindcompdbx;rtl;FireDACMySQLDriver;FireDACADSDriver;RESTComponents;DBXSqliteDriver;vcl;IndyIPServer;dsnapxml;dsnapcon;adortl;vclimg;FireDACPgDriver;FireDAC;inetdbxpress;xmlrtl;tethering;bindcompvcl;dsnap;CloudService;fmxobj;bindcompvclsmp;soaprtl;soapserver;FireDACIBDriver;$(DCC_UsePackage)</DCC_UsePackage>
@@ -105,9 +107,9 @@
         <AppDPIAwarenessMode>PerMonitorV2</AppDPIAwarenessMode>
         <VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
         <VerInfo_Locale>1033</VerInfo_Locale>
-        <Icon_MainIcon>PDV_Icon.ico</Icon_MainIcon>
-        <UWP_DelphiLogo44>..\..\..\..\..\Área de Trabalho\Arquivos\Arquivos\Imagens\Icones do Sistema\icone 44x44.png</UWP_DelphiLogo44>
-        <UWP_DelphiLogo150>..\..\..\..\..\Área de Trabalho\Arquivos\Arquivos\Imagens\Icones do Sistema\iconfinder_14_3319630.png</UWP_DelphiLogo150>
+        <Icon_MainIcon>PDV_Icon3.ico</Icon_MainIcon>
+        <UWP_DelphiLogo44>..\..\..\..\..\Área de Trabalho\Screenshot_1.png</UWP_DelphiLogo44>
+        <UWP_DelphiLogo150>..\..\..\..\..\Área de Trabalho\Screenshot_1.png</UWP_DelphiLogo150>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_1_Win64)'!=''">
         <AppDPIAwarenessMode>PerMonitorV2</AppDPIAwarenessMode>
@@ -120,6 +122,8 @@
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_2_Win32)'!=''">
         <AppDPIAwarenessMode>PerMonitorV2</AppDPIAwarenessMode>
+        <VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
+        <VerInfo_Locale>1033</VerInfo_Locale>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_2_Win64)'!=''">
         <AppDPIAwarenessMode>PerMonitorV2</AppDPIAwarenessMode>
@@ -165,6 +169,42 @@
             <Form>FrmCliente</Form>
             <FormType>dfm</FormType>
         </DCCReference>
+        <DCCReference Include="Cadastro\Servicos.pas">
+            <Form>frmServico</Form>
+            <FormType>dfm</FormType>
+        </DCCReference>
+        <DCCReference Include="Agendamento\Vincular_Servicos.pas">
+            <Form>frmAgendamentoServ</Form>
+            <FormType>dfm</FormType>
+        </DCCReference>
+        <DCCReference Include="Agendamento\Filtro\Filtrar.pas">
+            <Form>FrmFiltroAgendamento</Form>
+            <FormType>dfm</FormType>
+        </DCCReference>
+        <DCCReference Include="Cadastro\forma_pagamento.pas">
+            <Form>FrmFormaPgto</Form>
+            <FormType>dfm</FormType>
+        </DCCReference>
+        <DCCReference Include="Agendamento\pagto_agend.pas">
+            <Form>frmPagtoAgendamento</Form>
+            <FormType>dfm</FormType>
+        </DCCReference>
+        <DCCReference Include="Relatorio\Relatorios_Operacionais.pas">
+            <Form>frmRelatoriosOperacionais</Form>
+            <FormType>dfm</FormType>
+        </DCCReference>
+        <DCCReference Include="Relatorio\Relatorios_Financeiros.pas">
+            <Form>FrmRelatorios_Financeiros</Form>
+            <FormType>dfm</FormType>
+        </DCCReference>
+        <DCCReference Include="Parametro\parametro.pas">
+            <Form>FrmParametro</Form>
+            <FormType>dfm</FormType>
+        </DCCReference>
+        <DCCReference Include="Parametro\Banco.pas">
+            <Form>frmBanco</Form>
+            <FormType>dfm</FormType>
+        </DCCReference>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>
         </BuildConfiguration>
@@ -191,21 +231,20 @@
                 </Excluded_Packages>
             </Delphi.Personality>
             <Deployment Version="4">
-                <DeployFile LocalName="..\..\..\..\..\Área de Trabalho\Arquivos\Arquivos\Imagens\Icones do Sistema\icone 44x44.png" Configuration="Debug" Class="UWP_DelphiLogo44">
+                <DeployFile LocalName="..\..\..\..\..\Área de Trabalho\Screenshot_1.png" Configuration="Debug" Class="UWP_DelphiLogo44">
                     <Platform Name="Win32">
                         <RemoteDir>Assets\</RemoteDir>
                         <RemoteName>Logo44x44.png</RemoteName>
                         <Overwrite>true</Overwrite>
                     </Platform>
                 </DeployFile>
-                <DeployFile LocalName="..\..\..\..\..\Área de Trabalho\Arquivos\Arquivos\Imagens\Icones do Sistema\iconfinder_14_3319630.png" Configuration="Debug" Class="UWP_DelphiLogo150">
+                <DeployFile LocalName="Win32\Debug\PDV.exe" Configuration="Debug" Class="ProjectOutput">
                     <Platform Name="Win32">
-                        <RemoteDir>Assets\</RemoteDir>
-                        <RemoteName>Logo150x150.png</RemoteName>
+                        <RemoteName>PDV.exe</RemoteName>
                         <Overwrite>true</Overwrite>
                     </Platform>
                 </DeployFile>
-                <DeployFile LocalName="Win32\Debug\PDV.exe" Configuration="Debug" Class="ProjectOutput">
+                <DeployFile LocalName="Win32\Release\PDV.exe" Configuration="Release" Class="ProjectOutput">
                     <Platform Name="Win32">
                         <RemoteName>PDV.exe</RemoteName>
                         <Overwrite>true</Overwrite>
@@ -1178,4 +1217,20 @@
     <Import Project="$(BDS)\Bin\CodeGear.Delphi.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Delphi.Targets')"/>
     <Import Project="$(APPDATA)\Embarcadero\$(BDSAPPDATABASEDIR)\$(PRODUCTVERSION)\UserTools.proj" Condition="Exists('$(APPDATA)\Embarcadero\$(BDSAPPDATABASEDIR)\$(PRODUCTVERSION)\UserTools.proj')"/>
     <Import Project="$(MSBuildProjectName).deployproj" Condition="Exists('$(MSBuildProjectName).deployproj')"/>
+    <PropertyGroup Condition="'$(Config)'=='Debug' And '$(Platform)'=='Win32'">
+        <PreBuildEvent/>
+        <PreBuildEventIgnoreExitCode>False</PreBuildEventIgnoreExitCode>
+        <PreLinkEvent/>
+        <PreLinkEventIgnoreExitCode>False</PreLinkEventIgnoreExitCode>
+        <PostBuildEvent>xcopy /Y &quot;$(PROJECTDIR)\Lib\libmysql.dll&quot; &quot;$(OUTPUTDIR)\&quot;</PostBuildEvent>
+        <PostBuildEventIgnoreExitCode>False</PostBuildEventIgnoreExitCode>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(Config)'=='Release' And '$(Platform)'=='Win32'">
+        <PreBuildEvent/>
+        <PreBuildEventIgnoreExitCode>False</PreBuildEventIgnoreExitCode>
+        <PreLinkEvent/>
+        <PreLinkEventIgnoreExitCode>False</PreLinkEventIgnoreExitCode>
+        <PostBuildEvent>xcopy /Y &quot;$(PROJECTDIR)\Lib\libmysql.dll&quot; &quot;$(OUTPUTDIR)\&quot;</PostBuildEvent>
+        <PostBuildEventIgnoreExitCode>False</PostBuildEventIgnoreExitCode>
+    </PropertyGroup>
 </Project>

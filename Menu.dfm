@@ -5,8 +5,8 @@ object frmMenu: TfrmMenu
   BorderStyle = bsSingle
   Caption = 'Menu Principal'
   ClientHeight = 655
-  ClientWidth = 846
-  Color = clBtnFace
+  ClientWidth = 861
+  Color = clSandybrown
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
   Font.Height = -12
@@ -17,6 +17,52 @@ object frmMenu: TfrmMenu
   WindowState = wsMaximized
   OnShow = FormShow
   TextHeight = 15
+  object Panel1: TPanel
+    Left = 560
+    Top = 0
+    Width = 301
+    Height = 655
+    Align = alRight
+    BevelOuter = bvNone
+    Color = clSandybrown
+    ParentBackground = False
+    ParentShowHint = False
+    ShowCaption = False
+    ShowHint = False
+    TabOrder = 0
+    object Label1: TLabel
+      Left = 32
+      Top = 35
+      Width = 224
+      Height = 15
+      Caption = 'Enviar mensagem para os clientes do hoje:'
+    end
+    object Label2: TLabel
+      Left = 16
+      Top = 139
+      Width = 271
+      Height = 15
+      Caption = 'Enviar os agendetamentos de hoje para funcionario'
+    end
+    object btnEnviarFuncionarios: TButton
+      Left = 52
+      Top = 176
+      Width = 177
+      Height = 41
+      Caption = 'Enviar Whatsapp Funcionario'
+      TabOrder = 0
+      OnClick = btnEnviarFuncionariosClick
+    end
+    object BtnEnviarWhatsappAgendamento: TButton
+      Left = 52
+      Top = 65
+      Width = 177
+      Height = 41
+      Caption = 'Enviar Whatsapp Cliente'
+      TabOrder = 1
+      OnClick = BtnEnviarWhatsappAgendamentoClick
+    end
+  end
   object MainMenu1: TMainMenu
     Left = 416
     Top = 336
@@ -367,10 +413,6 @@ object frmMenu: TfrmMenu
         Caption = 'Servicos'
         OnClick = Produtos1Click
       end
-      object fornecedores1: TMenuItem
-        Caption = 'Fornecedores'
-        OnClick = fornecedores1Click
-      end
       object Usuarios1: TMenuItem
         Caption = 'Usuarios'
         Enabled = False
@@ -387,6 +429,10 @@ object frmMenu: TfrmMenu
       object Cliente2: TMenuItem
         Caption = 'Cliente'
         OnClick = Cliente2Click
+      end
+      object Formadepagamento1: TMenuItem
+        Caption = 'Forma de pagamento'
+        OnClick = Formadepagamento1Click
       end
     end
     object Agendamento1: TMenuItem
@@ -2963,7 +3009,22 @@ object frmMenu: TfrmMenu
         FF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFF
         FF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFF
         FF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00}
-      Caption = 'Relatorios'
+      Caption = ' Relatorios'
+      object RelatoriosOperacionais1: TMenuItem
+        Caption = 'Relatorios Operacionais '
+        OnClick = RelatoriosOperacionais1Click
+      end
+      object RelatriosFinanceiros1: TMenuItem
+        Caption = 'Relat'#243'rios Financeiros'
+        OnClick = RelatriosFinanceiros1Click
+      end
+    end
+    object Con1: TMenuItem
+      Caption = 'Configura'#231#227'o'
+      object Parametro1: TMenuItem
+        Caption = 'Parametro'
+        OnClick = Parametro1Click
+      end
     end
     object Sair1: TMenuItem
       Bitmap.Data = {
