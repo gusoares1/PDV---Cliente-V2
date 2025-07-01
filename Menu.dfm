@@ -4,7 +4,7 @@ object frmMenu: TfrmMenu
   BorderIcons = [biSystemMenu, biMinimize]
   BorderStyle = bsSingle
   Caption = 'Menu Principal'
-  ClientHeight = 655
+  ClientHeight = 660
   ClientWidth = 861
   Color = clSandybrown
   Font.Charset = DEFAULT_CHARSET
@@ -15,13 +15,14 @@ object frmMenu: TfrmMenu
   Menu = MainMenu1
   Position = poDesktopCenter
   WindowState = wsMaximized
+  OnCreate = FormCreate
   OnShow = FormShow
   TextHeight = 15
   object Panel1: TPanel
     Left = 560
     Top = 0
     Width = 301
-    Height = 655
+    Height = 660
     Align = alRight
     BevelOuter = bvNone
     Color = clSandybrown
@@ -30,6 +31,7 @@ object frmMenu: TfrmMenu
     ShowCaption = False
     ShowHint = False
     TabOrder = 0
+    ExplicitLeft = 568
     object Label1: TLabel
       Left = 32
       Top = 35
@@ -62,6 +64,16 @@ object frmMenu: TfrmMenu
       TabOrder = 1
       OnClick = BtnEnviarWhatsappAgendamentoClick
     end
+  end
+  object btnTestarLembretes: TButton
+    Left = 0
+    Top = 644
+    Width = 17
+    Height = 16
+    Caption = 'btnTestarLembretes'
+    Enabled = False
+    TabOrder = 1
+    OnClick = btnTestarLembretesClick
   end
   object MainMenu1: TMainMenu
     Left = 416
@@ -5084,5 +5096,10 @@ object frmMenu: TfrmMenu
         OnClick = Sair2Click
       end
     end
+  end
+  object TimerLembretes: TTimer
+    OnTimer = TimerLembretesTimer
+    Left = 688
+    Top = 336
   end
 end

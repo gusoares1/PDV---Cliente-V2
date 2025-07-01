@@ -35,6 +35,14 @@ type
     btnFiltrarPendentes: TButton;
     btnMarcarConfirmado: TButton;
     TsServicosClientes: TTabSheet;
+    Panel3: TPanel;
+    BtnEnviarMensaVenc: TButton;
+    btnFiltrarVencimento: TButton;
+    Label5: TLabel;
+    dtpDatainicialVenci: TDateTimePicker;
+    Label6: TLabel;
+    dtpDataFimVenci: TDateTimePicker;
+    grdVencimento: TDBGrid;
     procedure btnFiltrarAgendaClick(Sender: TObject);
     procedure grdAgendaDrawColumnCell(Sender: TObject; const Rect: TRect;
       DataCol: Integer; Column: TColumn; State: TGridDrawState);
@@ -50,6 +58,7 @@ type
     procedure DBGrid1DrawColumnCell(Sender: TObject; const Rect: TRect;
       DataCol: Integer; Column: TColumn; State: TGridDrawState);
     procedure btnMarcarConfirmadoClick(Sender: TObject);
+    procedure btnFiltrarVencimentoClick(Sender: TObject);
   private
       procedure ExportarParaCSV(const FileName: string);
       procedure carregarCombobox(
@@ -137,6 +146,60 @@ begin
     ' GROUP BY Funcionario';
 
   dm.query_servicosRealizado.Open;
+end;
+
+procedure TfrmRelatoriosOperacionais.btnFiltrarVencimentoClick(Sender: TObject);
+begin
+  dm.query_vencimento.sql.Clear;
+  dm.query_vencimento.sql.add(
+    'SELECT ' +
+    '  a.data AS DataAgendamento, ' +
+    '  c.nome AS NomeCliente, ' +
+    '  c.telefone AS TelefoneCliente, ' +
+    '  ags.nomeServico, ' +
+    '  ags.idagendamento, ' +
+    '  ags.data_vencimento AS DataVencimentoServico, ' +
+    '  a.Funcionario, ' +
+    '  CASE' +
+    '    WHEN ags.data_vencimento IS NULL THEN ''Sem Vencimento''' + // <<< CORRIGIDO AQUI (duas aspas simples)
+    '    WHEN ags.data_vencimento < CURDATE() THEN ''Vencido''' + // <<< CORRIGIDO AQUI
+    '    WHEN ags.data_vencimento BETWEEN CURDATE() AND DATE_ADD(CURDATE(), INTERVAL 5 DAY) THEN ''Próximo (5 dias)''' + // <<< CORRIGIDO AQUI
+    '    ELSE ''Vencerá em Breve''' + // <<< CORRIGIDO AQUI
+    '  END AS StatusVencimento,' +
+    '  CASE' +
+    '    WHEN ags.data_vencimento IS NULL THEN ''#CCCCCC''' + // <<< CORRIGIDO AQUI
+    '    WHEN ags.data_vencimento < CURDATE() THEN ''#FF0000''' + // <<< CORRIGIDO AQUI
+    '    WHEN ags.data_vencimento BETWEEN CURDATE() AND DATE_ADD(CURDATE(), INTERVAL 5 DAY) THEN ''#FFFF00''' + // <<< CORRIGIDO AQUI
+    '    ELSE ''#FFFFFF''' + // <<< CORRIGIDO AQUI
+    '  END AS CorStatus' +
+    ' FROM' +
+    '  agendamentos AS a' +
+    ' JOIN' +
+    '  cliente AS c ON a.cliente_id = c.id' +
+    ' JOIN ' +
+    '  agendamento_servicos AS ags ON a.id = ags.idAgendamento' +
+    ' WHERE ' +
+    ' ags.data_vencimento BETWEEN :DataInicioVenc AND :DataFimVenc ' +
+    ' GROUP BY' +
+    '   a.data,' +
+    '   c.nome,' +
+    '   c.telefone,' +
+    '   ags.nomeServico,' +
+    '   ags.idagendamento,' +
+    '   ags.data_vencimento,' +
+    '   a.Funcionario' +
+    ' ORDER BY' +
+    '   ags.data_vencimento ASC, c.nome'
+  );
+
+    ShowMessage('SQL da Query: ' + dm.query_vencimento.sql.Text);
+
+  dm.query_vencimento.ParamByName('DataInicioVenc').AsDate := dtpDatainicialVenci.Date;
+  dm.query_vencimento.ParamByName('DataFimVenc').AsDate := dtpDatafimVenci.Date;
+  dm.query_vencimento.Open;
+
+  ShowMessage('SQL da Query: ' + dm.query_vencimento.sql.Text);
+
 end;
 
 procedure TfrmRelatoriosOperacionais.btnImprimirClick(Sender: TObject);

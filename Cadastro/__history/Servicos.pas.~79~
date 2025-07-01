@@ -1,0 +1,257 @@
+unit Servicos;
+
+interface
+
+uses
+  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
+  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Data.DB, Vcl.Grids, Vcl.DBGrids,
+  Vcl.StdCtrls, Vcl.Buttons, Vcl.ExtCtrls;
+
+type
+  TFrmServico = class(TForm)
+    Label1: TLabel;
+    Label2: TLabel;
+    Label3: TLabel;
+    Label4: TLabel;
+    EdtServico: TEdit;
+    EdtDescricao: TEdit;
+    edtpreco: TEdit;
+    EdtBuscarNome: TEdit;
+    DBGrid1: TDBGrid;
+    btnNovo: TSpeedButton;
+    btnSalvar: TSpeedButton;
+    btnEditar: TSpeedButton;
+    btnExcluir: TSpeedButton;
+    edtDuracaoMeses: TEdit;
+    Label5: TLabel;
+    procedure btnNovoClick(Sender: TObject);
+    procedure btnSalvarClick(Sender: TObject);
+    procedure btnEditarClick(Sender: TObject);
+    procedure btnExcluirClick(Sender: TObject);
+    procedure DBGrid1CellClick(Column: TColumn);
+    procedure FormCreate(Sender: TObject);
+    procedure edtprecoKeyPress(Sender: TObject; var Key: Char);
+  private
+    procedure associarCampos;
+    procedure listar;
+    procedure habilitarCampos;
+    procedure desabilitarCampos;
+    procedure limpar;
+  public
+  end;
+
+var
+  FrmServico: TFrmServico;
+  id: string;
+
+implementation
+
+{$R *.dfm}
+
+uses Modulo;
+
+procedure TFrmServico.associarCampos;
+begin
+  dm.tb_servicos.FieldByName('nome').Value := EdtServico.Text;
+  dm.tb_servicos.FieldByName('descricao').Value := EdtDescricao.Text;
+  dm.tb_servicos.FieldByName('preco').Value := edtpreco.Text;
+  dm.tb_servicos.FieldByName('duracao_meses').Value := edtDuracaoMeses.Text;
+end;
+
+procedure TFrmServico.btnNovoClick(Sender: TObject);
+begin
+    if dm.tb_servicos.State in [dsEdit] then
+    dm.tb_servicos.Cancel;
+
+  habilitarCampos; // Chama o novo procedimento
+  limpar;
+
+  btnSalvar.Enabled := True;
+
+  EdtServico.SetFocus;
+  dm.tb_servicos.Insert;
+
+  btnEditar.Enabled := False;
+  btnExcluir.Enabled := False;
+
+end;
+
+procedure TFrmServico.btnSalvarClick(Sender: TObject);
+begin
+  if Trim(EdtServico.Text) = '' then
+  begin
+    MessageDlg('Preencha o Nome do Serviço', mtInformation, [mbOK], 0);
+    EdtServico.SetFocus;
+    Exit;
+  end;
+
+  dm.query_servicos.SQL.Clear;
+  dm.query_servicos.SQL.Add('SELECT * FROM servico WHERE nome = ' + QuotedStr(Trim(EdtServico.Text)));
+  dm.query_servicos.Open;
+
+  if not dm.query_servicos.IsEmpty then
+  begin
+    MessageDlg('O serviço "' + EdtServico.Text + '" já está cadastrado.', mtInformation, [mbOK], 0);
+    Exit;
+  end;
+
+  associarCampos;
+  dm.tb_servicos.Post;
+
+  MessageDlg('Salvo com sucesso.', mtInformation, [mbOK], 0);
+
+  limpar;          // Chama o novo procedimento
+  desabilitarCampos; // Chama o novo procedimento
+
+  btnSalvar.Enabled := False;
+  btnEditar.Enabled := False;
+  btnExcluir.Enabled := False;
+  listar;
+end;
+
+procedure TFrmServico.btnEditarClick(Sender: TObject);
+begin
+  if Trim(EdtServico.Text) = '' then
+  begin
+    MessageDlg('Preencha o Nome do Serviço', mtInformation, [mbOK], 0);
+    EdtServico.SetFocus;
+    Exit;
+  end;
+
+  // Associar os campos do formulário aos campos da tabela
+  associarCampos;
+  dm.query_servicos.close;
+  dm.query_servicos.sql.Clear;
+  dm.query_servicos.sql.add('UPDATE servico set nome = :nome, descricao = :descricao, preco = :preco, duracao_meses = :duracao_meses  where id = :id');
+  dm.query_servicos.ParamByName('nome').Value := EdtServico.Text;
+  dm.query_servicos.ParamByName('descricao').Value := EdtDescricao.Text;
+  dm.query_servicos.ParamByName('preco').Value := edtpreco.Text;
+  dm.query_servicos.ParamByName('duracao_meses').Value := edtDuracaoMeses.Text;
+
+  dm.query_servicos.ParamByName('id').Value := id;
+  dm.query_servicos.ExecSQL;
+
+  MessageDlg('Editado com sucesso.', mtInformation, [mbOK], 0);
+
+  // Limpa e desabilita campos, e atualiza a lista
+  limpar;
+  desabilitarCampos;
+  btnEditar.Enabled := False;
+  btnExcluir.Enabled := False;
+  listar;
+end;
+
+procedure TFrmServico.btnExcluirClick(Sender: TObject);
+begin
+    if MessageDlg('Deseja Excluir o registro?', TMsgDlgType.mtConfirmation, [TMsgDlgBtn.mbYes, TMsgDlgBtn.mbNo], 0) = mrYes then
+    begin
+      associarCampos;
+      dm.query_servicos.close;
+      dm.query_servicos.sql.Clear;
+      dm.query_servicos.sql.add('DELETE FROM servico WHERE id = :id');
+      dm.query_servicos.ParamByName('id').Value := id;
+      dm.query_servicos.ExecSQL;
+      MessageDlg('Deletado com sucesso', TMsgDlgType.mtInformation, mbOKCancel, 0);
+      btnEditar.Enabled := false;
+      btnExcluir.Enabled := false;
+      limpar;
+      desabilitarCampos;
+      listar;
+
+    end;
+
+end;
+
+procedure TFrmServico.DBGrid1CellClick(Column: TColumn);
+var ValorPreco: currency;
+begin
+    // Cancela a inserção se estiver em modo Insert
+  if dm.tb_servicos.State in [dsInsert] then
+    dm.tb_servicos.Cancel;
+
+  EdtServico.Text := dm.query_servicos.FieldByName('nome').AsString;
+  EdtDescricao.Text := dm.query_servicos.FieldByName('descricao').AsString;
+  ValorPreco := dm.query_servicos.FieldByName('preco').AsCurrency;
+  edtpreco.Text := Format('%.2f', [ValorPreco]); // Usa Format com %.2f para garantir ponto decimal
+  edtDuracaoMeses.text := dm.query_servicos.FieldByName('duracao_meses').AsString; // NOVO: Carregar duração
+  id := dm.query_servicos.FieldByName('id').AsString;
+
+  habilitarCampos;
+  btnEditar.Enabled := True;
+  btnExcluir.Enabled := True;
+
+  dm.tb_servicos.Edit;
+
+
+end;
+
+procedure TFrmServico.desabilitarCampos;
+begin
+  EdtServico.Enabled := False;
+  EdtDescricao.Enabled := False;
+  edtpreco.Enabled := False;
+  edtDuracaoMeses.Enabled := False;
+end;
+
+procedure TFrmServico.edtprecoKeyPress(Sender: TObject; var Key: Char);
+var
+  texto: string;
+  posPonto: Integer; // Renomeado para posPonto para clareza
+begin
+  // Permite números, PONTO e backspace
+  if not (Key in ['0'..'9', '.', #8]) then // Alterado de ',' para '.'
+  begin
+    Key := #0;
+    Exit;
+  end;
+
+  texto := TEdit(Sender).Text;
+
+  // Impede mais de um ponto
+  if (Key = '.') and (Pos('.', texto) > 0) then // Alterado de ',' para '.'
+  begin
+    Key := #0;
+    Exit;
+  end;
+
+  // Limita a 2 casas decimais após o ponto
+  posPonto := Pos('.', texto); // Alterado de posVirgula para posPonto e de ',' para '.'
+  if (posPonto > 0) and (TEdit(Sender).SelStart > posPonto) then
+  begin
+    if Length(Copy(texto, posPonto + 1, Length(texto))) >= 2 then
+      Key := #0;
+  end;
+end;
+
+procedure TFrmServico.FormCreate(Sender: TObject);
+begin
+  dm.tb_servicos.Active := True;
+  listar;
+  desabilitarCampos; // Desabilita os campos ao iniciar
+  btnSalvar.Enabled := False; // Desabilita salvar ao iniciar
+end;
+
+procedure TFrmServico.habilitarCampos;
+begin
+  EdtServico.Enabled := True;
+  EdtDescricao.Enabled := True;
+  edtpreco.Enabled := True;
+  edtDuracaoMeses.Enabled := True;
+end;
+
+procedure TFrmServico.limpar;
+begin
+  EdtServico.Clear;
+  EdtDescricao.Clear;
+  edtpreco.Clear;
+  edtDuracaoMeses.clear; // Zera a duração
+end;
+
+procedure TFrmServico.listar;
+begin
+  dm.query_servicos.SQL.Clear;
+  dm.query_servicos.SQL.Add('SELECT * FROM servico ORDER BY nome');
+  dm.query_servicos.Open;
+end;
+
+end.

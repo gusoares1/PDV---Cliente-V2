@@ -14,9 +14,6 @@ Coordinates=745,463,110,36
 [query_func]
 Coordinates=643,10,78,212
 
-[query_servicostempo_estimado]
-Coordinates=930,111,196,36
-
 [tb_usuario]
 Coordinates=843,10,84,190
 
@@ -50,12 +47,6 @@ Coordinates=398,812,155,36
 [query_ufsigla]
 Coordinates=745,958,91,36
 
-[query_servicosdescricao]
-Coordinates=1125,1,156,36
-
-[query_servicosid]
-Coordinates=745,1013,111,36
-
 [DsMunicipio]
 Coordinates=745,1,85,36
 
@@ -70,9 +61,6 @@ Coordinates=1125,56,171,36
 
 [query_fornecedoresproduto]
 Coordinates=1125,331,172,36
-
-[query_servicosnome]
-Coordinates=947,331,133,36
 
 [query_cliente]
 Coordinates=158,10,101,278
@@ -133,9 +121,6 @@ Coordinates=1125,991,140,36
 
 [DsUF]
 Coordinates=384,661,47,36
-
-[query_servicospreco]
-Coordinates=947,661,133,36
 
 [tb_funcionarionome]
 Coordinates=947,771,128,36
@@ -249,5 +234,5 @@ Coordinates=1600,441,231,36
 Coordinates=1600,496,246,36
 
 []
-Coordinates=745,1123,88,36
+Coordinates=745,1013,111,36
 

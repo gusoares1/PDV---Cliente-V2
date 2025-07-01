@@ -22,6 +22,8 @@ type
     btnSalvar: TSpeedButton;
     btnEditar: TSpeedButton;
     btnExcluir: TSpeedButton;
+    edtDuracaoMeses: TEdit;
+    Label5: TLabel;
     procedure btnNovoClick(Sender: TObject);
     procedure btnSalvarClick(Sender: TObject);
     procedure btnEditarClick(Sender: TObject);
@@ -32,6 +34,9 @@ type
   private
     procedure associarCampos;
     procedure listar;
+    procedure habilitarCampos;
+    procedure desabilitarCampos;
+    procedure limpar;
   public
   end;
 
@@ -46,25 +51,51 @@ implementation
 uses Modulo;
 
 procedure TFrmServico.associarCampos;
+var
+  ValorPrecoStr: string;
+  ValorPrecoCurrency: Currency;
+  LFormatSettings: TFormatSettings; // Declare uma variável para as configurações de formato
 begin
   dm.tb_servicos.FieldByName('nome').Value := EdtServico.Text;
   dm.tb_servicos.FieldByName('descricao').Value := EdtDescricao.Text;
-  dm.tb_servicos.FieldByName('preco').Value := edtpreco.Text;
+
+  // --- CORREÇÃO PARA GARANTIR PONTO DECIMAL NA CONVERSÃO PARA O BANCO ---
+  ValorPrecoStr := Edtpreco.Text; // Pega o texto do campo de edição (agora com ponto)
+
+  // Obtém as configurações de formato padrão do sistema
+  GetLocaleFormatSettings(LOCALE_USER_DEFAULT, LFormatSettings);
+  // Define o separador decimal para ponto, ignorando a configuração regional, para a conversão
+  LFormatSettings.DecimalSeparator := '.';
+  // Opcional: remove o separador de milhar para evitar problemas na conversão
+  LFormatSettings.ThousandSeparator := ' ';
+
+  try
+    // Converte a string (com ponto) para Currency usando as configurações modificadas
+    ValorPrecoCurrency := StrToCurr(ValorPrecoStr, LFormatSettings);
+    dm.tb_servicos.FieldByName('preco').AsCurrency := ValorPrecoCurrency;
+  except
+    on E: Exception do
+    begin
+      MessageDlg('Erro ao converter o preço. Verifique o formato do valor. Detalhes: ' + E.Message, mtError, [mbOK], 0);
+      // É importante sair ou tratar o erro para evitar gravação de dados incorretos
+      Abort; // Aborta a operação Post para não salvar um valor inválido
+    end;
+  end;
+  // ---------------------------------------------------------------------
+
+  // Converte a duração em meses para Integer
+  dm.tb_servicos.FieldByName('duracao_meses').AsInteger := StrToIntDef(edtDuracaoMeses.Text, 0);
 end;
 
 procedure TFrmServico.btnNovoClick(Sender: TObject);
 begin
     if dm.tb_servicos.State in [dsEdit] then
     dm.tb_servicos.Cancel;
+
+  habilitarCampos; // Chama o novo procedimento
+  limpar;
+
   btnSalvar.Enabled := True;
-
-  EdtServico.Enabled := True;
-  EdtDescricao.Enabled := True;
-  edtpreco.Enabled := True;
-
-  EdtServico.text := '';
-  EdtDescricao.text := '';
-  edtpreco.text := '';
 
   EdtServico.SetFocus;
   dm.tb_servicos.Insert;
@@ -98,18 +129,44 @@ begin
 
   MessageDlg('Salvo com sucesso.', mtInformation, [mbOK], 0);
 
-  EdtServico.Clear;
-  EdtDescricao.Clear;
-  edtpreco.Clear;
+  limpar;          // Chama o novo procedimento
+  desabilitarCampos; // Chama o novo procedimento
+
   btnSalvar.Enabled := False;
+  btnEditar.Enabled := False;
+  btnExcluir.Enabled := False;
   listar;
 end;
 
 procedure TFrmServico.btnEditarClick(Sender: TObject);
 begin
+  if Trim(EdtServico.Text) = '' then
+  begin
+    MessageDlg('Preencha o Nome do Serviço', mtInformation, [mbOK], 0);
+    EdtServico.SetFocus;
+    Exit;
+  end;
+
+  // Associar os campos do formulário aos campos da tabela
   associarCampos;
-  dm.tb_servicos.Post;
+  dm.query_servicos.close;
+  dm.query_servicos.sql.Clear;
+  dm.query_servicos.sql.add('UPDATE servico set nome = :nome, descricao = :descricao, preco = :preco, duracao_meses = :duracao_meses  where id = :id');
+  dm.query_servicos.ParamByName('nome').Value := EdtServico.Text;
+  dm.query_servicos.ParamByName('descricao').Value := EdtDescricao.Text;
+  dm.query_servicos.ParamByName('preco').Value := edtpreco.Text;
+  dm.query_servicos.ParamByName('duracao_meses').Value := edtDuracaoMeses.Text;
+
+  dm.query_servicos.ParamByName('id').Value := id;
+  dm.query_servicos.ExecSQL;
+
   MessageDlg('Editado com sucesso.', mtInformation, [mbOK], 0);
+
+  // Limpa e desabilita campos, e atualiza a lista
+  limpar;
+  desabilitarCampos;
+  btnEditar.Enabled := False;
+  btnExcluir.Enabled := False;
   listar;
 end;
 
@@ -126,9 +183,8 @@ begin
       MessageDlg('Deletado com sucesso', TMsgDlgType.mtInformation, mbOKCancel, 0);
       btnEditar.Enabled := false;
       btnExcluir.Enabled := false;
-      EdtServico.Text := '';
-      edtpreco.Text := '';
-      EdtDescricao.Text := '';
+      limpar;
+      desabilitarCampos;
       listar;
 
     end;
@@ -136,34 +192,61 @@ begin
 end;
 
 procedure TFrmServico.DBGrid1CellClick(Column: TColumn);
+var
+  ValorPreco: Currency;
+  LFormatSettings: TFormatSettings; // Declare uma variável para as configurações de formato
 begin
-    // Cancela a inserção se estiver em modo Insert
+  // Cancela a inserção se estiver em modo Insert
   if dm.tb_servicos.State in [dsInsert] then
     dm.tb_servicos.Cancel;
 
-  EdtServico.Text := dm.query_servicos.FieldByName('nome').AsString;
-  EdtDescricao.Text := dm.query_servicos.FieldByName('descricao').AsString;
-  edtpreco.Text := dm.query_servicos.FieldByName('preco').AsString;
-  id := dm.query_servicos.FieldByName('id').AsString;
-
+  // Habilita os campos e botões
+  habilitarCampos;
   btnEditar.Enabled := True;
   btnExcluir.Enabled := True;
 
+  // Coloca o dataset em modo de edição (é uma boa prática fazer isso antes de carregar os valores)
   dm.tb_servicos.Edit;
 
-  EdtServico.Enabled := True;
-  EdtDescricao.Enabled := True;
-  edtpreco.Enabled := True;
+  // Carrega os valores do registro selecionado no DBGrid para os campos de edição
+  EdtServico.Text := dm.query_servicos.FieldByName('nome').AsString;
+  EdtDescricao.Text := dm.query_servicos.FieldByName('descricao').AsString;
 
+  // --- CORREÇÃO PARA FORÇAR PONTO DECIMAL NA EXIBIÇÃO DO PREÇO ---
+  ValorPreco := dm.query_servicos.FieldByName('preco').AsCurrency;
+
+  // Obtém as configurações de formato padrão do sistema
+  GetLocaleFormatSettings(LOCALE_USER_DEFAULT, LFormatSettings);
+  // Define o separador decimal para ponto, ignorando a configuração regional
+  LFormatSettings.DecimalSeparator := '.';
+  // Opcional: remove o separador de milhar para evitar conflitos na entrada
+  LFormatSettings.ThousandSeparator := ' ';
+
+  // Formata o valor Currency para string usando FloatToStrF com as configurações modificadas
+  edtpreco.Text := FloatToStrF(ValorPreco, ffFixed, 15, 2, LFormatSettings);
+  // ----------------------------------------------------------------
+
+  // Carrega a duração em meses
+  edtDuracaoMeses.text := dm.query_servicos.FieldByName('duracao_meses').AsString;
+  // Captura o ID do serviço
+  id := dm.query_servicos.FieldByName('id').AsString;
+end;
+
+procedure TFrmServico.desabilitarCampos;
+begin
+  EdtServico.Enabled := False;
+  EdtDescricao.Enabled := False;
+  edtpreco.Enabled := False;
+  edtDuracaoMeses.Enabled := False;
 end;
 
 procedure TFrmServico.edtprecoKeyPress(Sender: TObject; var Key: Char);
 var
   texto: string;
-  posVirgula: Integer;
+  posPonto: Integer; // Renomeado para posPonto para clareza
 begin
-  // Permite números, vírgula e backspace
-  if not (Key in ['0'..'9', ',', #8]) then
+  // Permite números, PONTO e backspace
+  if not (Key in ['0'..'9', '.', #8]) then // Alterado de ',' para '.'
   begin
     Key := #0;
     Exit;
@@ -171,18 +254,18 @@ begin
 
   texto := TEdit(Sender).Text;
 
-  // Impede mais de uma vírgula
-  if (Key = ',') and (Pos(',', texto) > 0) then
+  // Impede mais de um ponto
+  if (Key = '.') and (Pos('.', texto) > 0) then // Alterado de ',' para '.'
   begin
     Key := #0;
     Exit;
   end;
 
-  // Limita a 2 casas decimais após a vírgula
-  posVirgula := Pos(',', texto);
-  if (posVirgula > 0) and (tedit(sender).SelStart > posVirgula) then
+  // Limita a 2 casas decimais após o ponto
+  posPonto := Pos('.', texto); // Alterado de posVirgula para posPonto e de ',' para '.'
+  if (posPonto > 0) and (TEdit(Sender).SelStart > posPonto) then
   begin
-    if Length(Copy(texto, posVirgula + 1, Length(texto))) >= 2 then
+    if Length(Copy(texto, posPonto + 1, Length(texto))) >= 2 then
       Key := #0;
   end;
 end;
@@ -191,6 +274,24 @@ procedure TFrmServico.FormCreate(Sender: TObject);
 begin
   dm.tb_servicos.Active := True;
   listar;
+  desabilitarCampos; // Desabilita os campos ao iniciar
+  btnSalvar.Enabled := False; // Desabilita salvar ao iniciar
+end;
+
+procedure TFrmServico.habilitarCampos;
+begin
+  EdtServico.Enabled := True;
+  EdtDescricao.Enabled := True;
+  edtpreco.Enabled := True;
+  edtDuracaoMeses.Enabled := True;
+end;
+
+procedure TFrmServico.limpar;
+begin
+  EdtServico.Clear;
+  EdtDescricao.Clear;
+  edtpreco.Clear;
+  edtDuracaoMeses.clear; // Zera a duração
 end;
 
 procedure TFrmServico.listar;

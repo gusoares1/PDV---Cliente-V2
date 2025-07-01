@@ -222,8 +222,82 @@ object frmRelatoriosOperacionais: TfrmRelatoriosOperacionais
       end
     end
     object TsServicosClientes: TTabSheet
-      Caption = 'TsServicosClientes'
+      Caption = 'Servi'#231'os vencidos'
       ImageIndex = 3
+      object Panel3: TPanel
+        Left = 0
+        Top = 0
+        Width = 1128
+        Height = 40
+        Align = alTop
+        TabOrder = 0
+        object Label5: TLabel
+          Left = 31
+          Top = 3
+          Width = 59
+          Height = 15
+          Caption = 'Data In'#237'cio:'
+        end
+        object Label6: TLabel
+          Left = 352
+          Top = 8
+          Width = 50
+          Height = 15
+          Caption = 'Data Fim:'
+        end
+        object BtnEnviarMensaVenc: TButton
+          AlignWithMargins = True
+          Left = 976
+          Top = 2
+          Width = 137
+          Height = 32
+          Caption = 'Enviar Mensagem'
+          TabOrder = 0
+          OnClick = btnEnviarWhatsAppClick
+        end
+        object btnFiltrarVencimento: TButton
+          AlignWithMargins = True
+          Left = 851
+          Top = 2
+          Width = 108
+          Height = 32
+          Caption = 'Filtrar'
+          TabOrder = 1
+          OnClick = btnFiltrarVencimentoClick
+        end
+        object dtpDatainicialVenci: TDateTimePicker
+          Left = 96
+          Top = 8
+          Width = 186
+          Height = 23
+          Date = 45786.000000000000000000
+          Time = 0.981428900464379700
+          TabOrder = 2
+        end
+        object dtpDataFimVenci: TDateTimePicker
+          Left = 408
+          Top = 11
+          Width = 186
+          Height = 23
+          Date = 45786.000000000000000000
+          Time = 0.981428900464379700
+          TabOrder = 3
+        end
+      end
+      object grdVencimento: TDBGrid
+        Left = 0
+        Top = 40
+        Width = 1128
+        Height = 592
+        Align = alClient
+        DataSource = dm.DsVencimento
+        TabOrder = 1
+        TitleFont.Charset = DEFAULT_CHARSET
+        TitleFont.Color = clWindowText
+        TitleFont.Height = -12
+        TitleFont.Name = 'Segoe UI'
+        TitleFont.Style = []
+      end
     end
   end
   object SaveDialog1: TSaveDialog

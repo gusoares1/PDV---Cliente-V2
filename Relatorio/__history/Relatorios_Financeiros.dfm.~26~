@@ -1,0 +1,312 @@
+object FrmRelatorios_Financeiros: TFrmRelatorios_Financeiros
+  Left = 0
+  Top = 0
+  Caption = 'Relatorios Financeiros'
+  ClientHeight = 695
+  ClientWidth = 1277
+  Color = clBtnFace
+  Font.Charset = DEFAULT_CHARSET
+  Font.Color = clWindowText
+  Font.Height = -12
+  Font.Name = 'Segoe UI'
+  Font.Style = []
+  TextHeight = 15
+  object pcRelatorios: TPageControl
+    Left = 0
+    Top = 0
+    Width = 1277
+    Height = 695
+    ActivePage = tsFaturamentoMensal
+    Align = alClient
+    TabOrder = 0
+    object tsFaturaServico: TTabSheet
+      Caption = 'Faturamento por Servi'#231'o'
+      object Panel1: TPanel
+        Left = 0
+        Top = 0
+        Width = 1269
+        Height = 40
+        Align = alTop
+        TabOrder = 0
+        object Label1: TLabel
+          Left = 23
+          Top = 3
+          Width = 59
+          Height = 15
+          Caption = 'Data In'#237'cio:'
+        end
+        object Label2: TLabel
+          Left = 344
+          Top = 8
+          Width = 50
+          Height = 15
+          Caption = 'Data Fim:'
+        end
+        object dtpDataInicio: TDateTimePicker
+          Left = 88
+          Top = 8
+          Width = 186
+          Height = 23
+          Date = 45786.000000000000000000
+          Time = 0.981428900464379700
+          TabOrder = 0
+        end
+        object btnFiltrarFaturamento: TButton
+          AlignWithMargins = True
+          Left = 613
+          Top = 2
+          Width = 108
+          Height = 32
+          Caption = 'Filtrar'
+          TabOrder = 1
+          OnClick = btnFiltrarFaturamentoClick
+        end
+        object btnImprimir: TButton
+          AlignWithMargins = True
+          Left = 989
+          Top = 2
+          Width = 108
+          Height = 32
+          Caption = 'Impimir '
+          TabOrder = 2
+          OnClick = btnImprimirClick
+        end
+        object dtpDataFim: TDateTimePicker
+          Left = 400
+          Top = 8
+          Width = 186
+          Height = 23
+          Date = 45786.000000000000000000
+          Time = 0.981428900464379700
+          TabOrder = 3
+        end
+      end
+      object grdFaturamentoServico: TDBGrid
+        Left = 0
+        Top = 40
+        Width = 1269
+        Height = 625
+        Align = alClient
+        DataSource = dm.DsFaturamentoServico
+        TabOrder = 1
+        TitleFont.Charset = DEFAULT_CHARSET
+        TitleFont.Color = clWindowText
+        TitleFont.Height = -12
+        TitleFont.Name = 'Segoe UI'
+        TitleFont.Style = []
+      end
+    end
+    object tsPagamentosPendentes: TTabSheet
+      Caption = 'Pagamentos Pendentes'
+      ImageIndex = 1
+      object pnlfiltrosSerivos: TPanel
+        Left = 0
+        Top = 0
+        Width = 1269
+        Height = 40
+        Align = alTop
+        TabOrder = 0
+        object Label3: TLabel
+          Left = 31
+          Top = 5
+          Width = 59
+          Height = 15
+          Caption = 'Data In'#237'cio:'
+        end
+        object Label5: TLabel
+          Left = 352
+          Top = 10
+          Width = 50
+          Height = 15
+          Caption = 'Data Fim:'
+        end
+        object dtpInicial: TDateTimePicker
+          Left = 96
+          Top = 10
+          Width = 186
+          Height = 23
+          Date = 45786.000000000000000000
+          Time = 0.981428900464379700
+          TabOrder = 0
+        end
+        object dtpFim: TDateTimePicker
+          Left = 408
+          Top = 10
+          Width = 186
+          Height = 23
+          Date = 45786.000000000000000000
+          Time = 0.981428900464379700
+          TabOrder = 1
+        end
+        object btnFiltrarPendente: TButton
+          AlignWithMargins = True
+          Left = 621
+          Top = 2
+          Width = 108
+          Height = 32
+          Caption = 'Filtrar'
+          TabOrder = 2
+          OnClick = btnFiltrarPendenteClick
+        end
+        object btnEnviarLembrete: TButton
+          AlignWithMargins = True
+          Left = 984
+          Top = 2
+          Width = 137
+          Height = 32
+          Caption = 'Enviar Mensagem'
+          TabOrder = 3
+          OnClick = btnEnviarLembreteClick
+        end
+      end
+      object grdServicosRealizados: TDBGrid
+        Left = 0
+        Top = 40
+        Width = 1269
+        Height = 625
+        Align = alClient
+        DataSource = dm.DsPagamentosPendentes
+        TabOrder = 1
+        TitleFont.Charset = DEFAULT_CHARSET
+        TitleFont.Color = clWindowText
+        TitleFont.Height = -12
+        TitleFont.Name = 'Segoe UI'
+        TitleFont.Style = []
+      end
+    end
+    object tsMetodosPagamento: TTabSheet
+      Caption = 'M'#233'todos de Pagamento'
+      ImageIndex = 2
+      object grdMetodosPagamento: TDBGrid
+        Left = 0
+        Top = 40
+        Width = 1269
+        Height = 625
+        Align = alClient
+        DataSource = dm.DsMetodosPagamento
+        TabOrder = 0
+        TitleFont.Charset = DEFAULT_CHARSET
+        TitleFont.Color = clWindowText
+        TitleFont.Height = -12
+        TitleFont.Name = 'Segoe UI'
+        TitleFont.Style = []
+      end
+      object Panel2: TPanel
+        Left = 0
+        Top = 0
+        Width = 1269
+        Height = 40
+        Align = alTop
+        TabOrder = 1
+        object Label4: TLabel
+          Left = 39
+          Top = 11
+          Width = 59
+          Height = 15
+          Caption = 'Data In'#237'cio:'
+        end
+        object Label6: TLabel
+          Left = 360
+          Top = 12
+          Width = 50
+          Height = 15
+          Caption = 'Data Fim:'
+        end
+        object dtpInicioMetodo: TDateTimePicker
+          Left = 104
+          Top = 11
+          Width = 186
+          Height = 23
+          Date = 45786.000000000000000000
+          Time = 0.981428900464379700
+          TabOrder = 0
+        end
+        object dtpFimMetodo: TDateTimePicker
+          Left = 416
+          Top = 11
+          Width = 186
+          Height = 23
+          Date = 45786.000000000000000000
+          Time = 0.981428900464379700
+          TabOrder = 1
+        end
+        object BtnFiltrarMetodo: TButton
+          AlignWithMargins = True
+          Left = 629
+          Top = 2
+          Width = 108
+          Height = 32
+          Caption = 'Filtrar'
+          TabOrder = 2
+          OnClick = BtnFiltrarMetodoClick
+        end
+        object BtnExportarMetodo: TButton
+          AlignWithMargins = True
+          Left = 997
+          Top = 2
+          Width = 108
+          Height = 32
+          Caption = 'Impimir '
+          TabOrder = 3
+          OnClick = BtnExportarMetodoClick
+        end
+      end
+    end
+    object tsFaturamentoMensal: TTabSheet
+      Caption = 'Faturamento Mensal'
+      ImageIndex = 3
+      object Panel3: TPanel
+        Left = 0
+        Top = 0
+        Width = 1269
+        Height = 40
+        Align = alTop
+        TabOrder = 0
+        object Label7: TLabel
+          Left = 73
+          Top = 11
+          Width = 25
+          Height = 15
+          Caption = 'Ano:'
+        end
+        object dtpAno: TDateTimePicker
+          Left = 104
+          Top = 11
+          Width = 186
+          Height = 23
+          Date = 45786.000000000000000000
+          Time = 0.981428900464379700
+          TabOrder = 0
+        end
+        object btnFiltrarMes: TButton
+          AlignWithMargins = True
+          Left = 325
+          Top = 2
+          Width = 108
+          Height = 32
+          Caption = 'Filtrar'
+          TabOrder = 1
+          OnClick = btnFiltrarMesClick
+        end
+      end
+      object grdFaturamentoMensal: TDBGrid
+        Left = 0
+        Top = 40
+        Width = 1269
+        Height = 625
+        Align = alClient
+        DataSource = dm.DsFaturamentoMensal
+        TabOrder = 1
+        TitleFont.Charset = DEFAULT_CHARSET
+        TitleFont.Color = clWindowText
+        TitleFont.Height = -12
+        TitleFont.Name = 'Segoe UI'
+        TitleFont.Style = []
+      end
+    end
+  end
+  object SaveDialog1: TSaveDialog
+    Left = 952
+    Top = 192
+  end
+end

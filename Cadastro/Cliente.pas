@@ -371,6 +371,7 @@ begin
         begin
           nomeCliente := dm.query_Listar_Cliente.FieldByName('nome').value;
           telefoneCliente:= dm.query_Listar_Cliente.FieldByName('telefone').value;
+          idCliente := dm.query_Listar_Cliente.FieldByName('id').AsInteger;
           close;
           chamada := '';
         end;

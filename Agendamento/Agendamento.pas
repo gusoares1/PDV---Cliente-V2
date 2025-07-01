@@ -73,6 +73,7 @@ uses Cliente, Funcionario, Modulo, Vincular_Servicos, Filtrar, pagto_agend;
 
 procedure TfrmAgendamento.associarCampos;
 begin
+  dm.tb_agendamento.FieldByName('cliente_id').AsInteger := idCliente;
   dm.tb_agendamento.FieldByName('cliente').value :=EdtCliente.Text;
   dm.tb_agendamento.FieldByName('funcionario').value :=EdtFuncionario.Text;
   dm.tb_agendamento.FieldByName('data').value :=DateAgendamento.date;
@@ -122,11 +123,12 @@ begin
   dm.query_agendamentos.SQL.add(
             'UPDATE agendamentos '+
             'SET cliente = :cliente, funcionario = :funcionario, descricao = :descricao,' +
-            'data = :data, hora = :hora, horas_trabalhadas = :horas_trabalhadas , ConfirmacaoCliente = :ConfirmacaoCliente  '+
+            'data = :data, hora = :hora, horas_trabalhadas = :horas_trabalhadas , ConfirmacaoCliente = :ConfirmacaoCliente, cliente_id = :cliente_id  '+
             'WHERE id = :id'
             );
 
   dm.query_agendamentos.ParamByName('cliente').AsString := EdtCliente.Text;
+  dm.query_agendamentos.ParamByName('cliente_id').AsInteger := idCliente;
   dm.query_agendamentos.ParamByName('funcionario').AsString := EdtFuncionario.Text;
   dm.query_agendamentos.ParamByName('descricao').AsString := EdtDescricao.Text;
   dm.query_agendamentos.ParamByName('data').AsDate := DateAgendamento.Date;
@@ -200,6 +202,10 @@ begin
   try
     if Trim(EdtCliente.Text) = '' then
       raise Exception.Create('Preencha o Cliente.');
+
+    if idCliente = 0 then
+      raise Exception.Create('Selecione um cliente válido.');
+
 
     if Trim(EdtFuncionario.Text) = '' then
       raise Exception.Create('Preencha o Funcionário.');
@@ -284,6 +290,8 @@ begin
 end;
 
 procedure TfrmAgendamento.DBGrid1CellClick(Column: TColumn);
+var
+clienteIDSelecionado: Integer;
 begin
   try
     // Habilita edição apenas se for o campo "Realizado"
@@ -292,14 +300,12 @@ begin
       if not (dm.query_agendamentos.State in [dsEdit, dsInsert]) then
         dm.query_agendamentos.Edit;
 
-      // Tenta alterar o valor usando tratamento numérico
       if Column.Field.AsInteger = 1 then
         Column.Field.AsInteger := 0
       else
         Column.Field.AsInteger := 1;
     end;
 
-    // Restante do código existente...
     habilitarCampos;
     btnEditar.Enabled := true;
     btnExcluir.Enabled := true;
@@ -308,6 +314,7 @@ begin
     dm.tb_agendamento.Edit;
     id := dm.query_agendamentos.FieldByName('id').AsInteger;
     idSelecionado := id;
+    clienteIDSelecionado := dm.query_agendamentos.FieldByName('cliente_id').AsInteger;
 
     EdtCliente.Text := dm.query_agendamentos.FieldByName('cliente').AsString;
     EdtFuncionario.Text := dm.query_agendamentos.FieldByName('funcionario').AsString;

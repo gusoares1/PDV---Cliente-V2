@@ -12,6 +12,7 @@ object FrmLogin: TFrmLogin
   Font.Name = 'Segoe UI'
   Font.Style = []
   KeyPreview = True
+  Scaled = False
   WindowState = wsMaximized
   OnCanResize = FormCanResize
   OnKeyDown = FormKeyDown
@@ -2406,14 +2407,16 @@ object FrmLogin: TFrmLogin
         3534184343F889FCB7FC3253508307EB5FFE446A3A1A1E8BFE1A7FE00D9060C3
         43F9FF00FFD9}
       Stretch = True
-      ExplicitLeft = 0
-      ExplicitTop = 0
+      ExplicitLeft = 2
+      ExplicitTop = 2
     end
     object pnlLogin: TPanel
+      AlignWithMargins = True
       Left = 208
       Top = 114
       Width = 360
       Height = 359
+      AutoSize = True
       TabOrder = 0
       object imgLogin: TImage
         Left = 1
@@ -5441,6 +5444,8 @@ object FrmLogin: TFrmLogin
         ShowHint = False
         ExplicitLeft = 0
         ExplicitTop = 0
+        ExplicitWidth = 352
+        ExplicitHeight = 351
       end
       object btnLogin: TSpeedButton
         Left = 56

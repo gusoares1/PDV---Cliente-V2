@@ -82,11 +82,6 @@ type
     tb_servicos: TFDTable;
     query_servicos: TFDQuery;
     DsServicos: TDataSource;
-    query_servicosid: TFDAutoIncField;
-    query_servicosnome: TStringField;
-    query_servicospreco: TBCDField;
-    query_servicostempo_estimado: TIntegerField;
-    query_servicosdescricao: TStringField;
     DsAgendamentoServ: TDataSource;
     query_agendamentoserv: TFDQuery;
     tb_agendamentoserv: TFDTable;
@@ -154,6 +149,19 @@ type
     query_formapagtonome: TStringField;
     query_formapagtoparcela: TBooleanField;
     query_formapagtoativo: TBooleanField;
+    query_enviarfuc: TFDQuery;
+    query_agendamentoscliente_id: TIntegerField;
+    tb_agendamentocliente_id: TIntegerField;
+    query_Pagamentos_PendentesDataAgendamento: TDateField;
+    query_Pagamentos_PendentesCliente: TStringField;
+    query_Pagamentos_PendentesTelefoneCliente: TStringField;
+    query_Pagamentos_PendentesFuncionario: TStringField;
+    query_Pagamentos_PendentesValorTotalServicos: TFMTBCDField;
+    query_Pagamentos_PendentesValorTotalPago: TFMTBCDField;
+    query_Pagamentos_PendentesValorPendente: TFMTBCDField;
+    query_Pagamentos_PendentesServicosAgendados: TStringField;
+    query_vencimento: TFDQuery;
+    DsVencimento: TDataSource;
     procedure DataModuleCreate(Sender: TObject);
     procedure query_agendamentosConfirmacaoClienteGetText(Sender: TField;
       var Text: string; DisplayText: Boolean);
@@ -181,7 +189,7 @@ type
 
 var
   dm: Tdm;
-  idCliente : string;
+  idCliente : Integer;
   nomeCliente : string;
   telefoneCliente : string;
   documentoCliente : string;
@@ -199,7 +207,7 @@ var
 
   idAgendamento: Integer;
 
-   LimparCamposFiltro: Boolean = False;
+  LimparCamposFiltro: Boolean = False;
 
 implementation
 
@@ -289,7 +297,7 @@ begin
   if not Sender.IsNull then
     Text := Format('R$ %.2f', [Sender.AsFloat])
   else
-    Text := 'R$ 0,00';
+    Text := 'R$ 0.00';
 end;
 
 procedure Tdm.query_Faturamento_MensalTotal_RecebidoGetText(Sender: TField;
@@ -298,7 +306,7 @@ begin
   if not Sender.IsNull then
     Text := Format('R$ %.2f', [Sender.AsFloat])
   else
-    Text := 'R$ 0,00';
+    Text := 'R$ 0.00';
 end;
 
 procedure Tdm.query_formapagtoativoGetText(Sender: TField; var Text: string;
@@ -329,7 +337,7 @@ begin
   if not Sender.IsNull then
     Text := Format('R$ %.2f', [Sender.AsFloat])
   else
-    Text := 'R$ 0,00';
+    Text := 'R$ 0.00';
 end;
 
 procedure Tdm.query_Pagamentos_PendentesTotal_DevidoGetText(Sender: TField;
@@ -338,7 +346,7 @@ begin
   if not Sender.IsNull then
     Text := Format('R$ %.2f', [Sender.AsFloat])
   else
-    Text := 'R$ 0,00';
+    Text := 'R$ 0.00';
 end;
 
 end.
