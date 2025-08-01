@@ -59,23 +59,11 @@ Coordinates=10,498,43,58
 [query_Listar_Clienteestado]
 Coordinates=1125,56,171,36
 
-[query_fornecedoresproduto]
-Coordinates=1125,331,172,36
-
 [query_cliente]
 Coordinates=158,10,101,278
 
-[query_fornecedorestelefone]
-Coordinates=1125,386,175,36
-
 [query_Listar_Clientebairro]
 Coordinates=1125,441,166,36
-
-[query_fornecedoresdata]
-Coordinates=1125,496,154,36
-
-[query_fornecedoresnome]
-Coordinates=1125,606,161,36
 
 [tb_funcionariocargo]
 Coordinates=947,386,128,36
@@ -173,17 +161,11 @@ Coordinates=534,298,108,124
 [query_Listar_Clientecep]
 Coordinates=966,1388,154,36
 
-[query_fornecedoresid]
-Coordinates=369,1388,139,36
-
 [tb_servicos]
 Coordinates=260,298,98,168
 
 [DsAgendamentoServ]
 Coordinates=382,210,136,36
-
-[query_fornecedoresendereco]
-Coordinates=1447,56,182,36
 
 [DSFornecedores]
 Coordinates=557,793,111,36
@@ -234,5 +216,5 @@ Coordinates=1600,441,231,36
 Coordinates=1600,496,246,36
 
 []
-Coordinates=745,1013,111,36
+Coordinates=369,1388,139,36
 

@@ -158,7 +158,7 @@ $(PostBuildEvent)]]></PostBuildEvent>
             <DesignClass>TDataModule</DesignClass>
         </DCCReference>
         <DCCReference Include="Cadastro\Fornecedores.pas">
-            <Form>frmfornecedores</Form>
+            <Form>FrmCategoriaGastos</Form>
             <FormType>dfm</FormType>
         </DCCReference>
         <DCCReference Include="Agendamento\Agendamento.pas">
@@ -203,6 +203,10 @@ $(PostBuildEvent)]]></PostBuildEvent>
         </DCCReference>
         <DCCReference Include="Parametro\Banco.pas">
             <Form>frmBanco</Form>
+            <FormType>dfm</FormType>
+        </DCCReference>
+        <DCCReference Include="Financeiro\Gastos.pas">
+            <Form>FrmGastos</Form>
             <FormType>dfm</FormType>
         </DCCReference>
         <BuildConfiguration Include="Base">

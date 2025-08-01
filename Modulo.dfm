@@ -14,6 +14,9 @@ object dm: Tdm
     Top = 8
   end
   object FDPhysMySQLDriverLink1: TFDPhysMySQLDriverLink
+    VendorLib = 
+      'C:\Users\Pichau\OneDrive\Documentos\Embarcadero\Studio\Projects\' +
+      'PDV - Cliente V2\Lib\libmySQL.dll'
     Left = 88
     Top = 8
   end
@@ -202,51 +205,27 @@ object dm: Tdm
   end
   object tb_fornecedor: TFDTable
     Connection = fd
-    TableName = 'pdv.fornecedores'
+    TableName = 'pdv.categorias_gasto'
     Left = 24
     Top = 272
   end
   object query_fornecedores: TFDQuery
     Connection = fd
     SQL.Strings = (
-      '               select * from fornecedores')
+      '               select * from categorias_gasto')
     Left = 122
     Top = 272
-    object query_fornecedoresid: TFDAutoIncField
-      FieldName = 'id'
-      Origin = 'id'
+    object query_fornecedoresid_categoria: TFDAutoIncField
+      FieldName = 'id_categoria'
+      Origin = 'id_categoria'
       ProviderFlags = [pfInWhere, pfInKey]
       ReadOnly = False
     end
-    object query_fornecedoresnome: TStringField
-      FieldName = 'nome'
-      Origin = 'nome'
+    object query_fornecedoresnome_categoria: TStringField
+      FieldName = 'nome_categoria'
+      Origin = 'nome_categoria'
       Required = True
-      Size = 25
-    end
-    object query_fornecedoresproduto: TStringField
-      FieldName = 'produto'
-      Origin = 'produto'
-      Required = True
-      Size = 25
-    end
-    object query_fornecedorestelefone: TStringField
-      DisplayWidth = 10
-      FieldName = 'telefone'
-      Origin = 'telefone'
-      Required = True
-      Size = 35
-    end
-    object query_fornecedoresendereco: TStringField
-      FieldName = 'endereco'
-      Origin = 'endereco'
-      Required = True
-      Size = 40
-    end
-    object query_fornecedoresdata: TDateField
-      FieldName = 'data'
-      Origin = 'data'
-      Required = True
+      Size = 100
     end
   end
   object DSFornecedores: TDataSource
@@ -1108,5 +1087,151 @@ object dm: Tdm
     DataSet = query_vencimento
     Left = 539
     Top = 712
+  end
+  object tb_gastos: TFDTable
+    Active = True
+    IndexFieldNames = 'id_gasto'
+    Connection = fd
+    ResourceOptions.AssignedValues = [rvEscapeExpand]
+    TableName = 'gastos'
+    Left = 24
+    Top = 552
+    object tb_gastosid_gasto: TFDAutoIncField
+      FieldName = 'id_gasto'
+      Origin = 'id_gasto'
+      ReadOnly = False
+    end
+    object tb_gastosdata_gasto: TDateField
+      FieldName = 'data_gasto'
+      Origin = 'data_gasto'
+      Required = True
+    end
+    object tb_gastosdescricao: TStringField
+      FieldName = 'descricao'
+      Origin = 'descricao'
+      Required = True
+      Size = 255
+    end
+    object tb_gastosvalor: TBCDField
+      FieldName = 'valor'
+      Origin = 'valor'
+      Required = True
+      Precision = 10
+      Size = 2
+    end
+    object tb_gastosid_categoria: TIntegerField
+      AutoGenerateValue = arDefault
+      FieldName = 'id_categoria'
+      Origin = 'id_categoria'
+    end
+  end
+  object query_gastos: TFDQuery
+    Connection = fd
+    SQL.Strings = (
+      '               select * from gastos')
+    Left = 109
+    Top = 552
+  end
+  object DsGastos: TDataSource
+    DataSet = query_gastos
+    Left = 206
+    Top = 552
+  end
+  object query_LucrosGastos: TFDQuery
+    Connection = fd
+    SQL.Strings = (
+      'SELECT'
+      '    AllMonths.Mes_Ano,'
+      
+        '    COALESCE(Revenue.Receita_Liquida_Servicos, 0) AS Receita_Liq' +
+        'uida,'
+      '    COALESCE(Expenses.Total_Gastos, 0) AS Total_Gastos,'
+      
+        '    (COALESCE(Revenue.Receita_Liquida_Servicos, 0) - COALESCE(Ex' +
+        'penses.Total_Gastos, 0)) AS Lucro_Liquido'
+      'FROM'
+      '    ('
+      
+        '        -- Seleciona todos os meses distintos das tabelas de age' +
+        'ndamentos e gastos para o ano selecionado'
+      
+        '        SELECT DATE_FORMAT(DATA, '#39'%Y-%m'#39') AS Mes_Ano FROM agenda' +
+        'mentos'
+      '       -- WHERE YEAR(data) = 2025'
+      '        UNION'
+      
+        '        SELECT DATE_FORMAT(data_gasto, '#39'%Y-%m'#39') AS Mes_Ano FROM ' +
+        'gastos'
+      '        -- WHERE YEAR(data_gasto) = 2025'
+      '    ) AS AllMonths'
+      'LEFT JOIN'
+      '    ('
+      
+        '        -- Subquery para calcular a receita l'#237'quida de servi'#231'os ' +
+        'por m'#234's para o ano selecionado'
+      '        SELECT'
+      '            DATE_FORMAT(a.data, '#39'%Y-%m'#39') AS Mes_Ano,'
+      
+        '            SUM(ags.preco - COALESCE(ags.desconto, 0)) AS Receit' +
+        'a_Liquida_Servicos'
+      '        FROM'
+      '            agendamentos AS a'
+      '        LEFT JOIN'
+      
+        '            agendamento_servicos AS ags ON ags.idAgendamento = a' +
+        '.id'
+      '        -- WHERE YEAR(a.data) = 2025'
+      '        GROUP BY'
+      '            Mes_Ano'
+      '    ) AS Revenue ON AllMonths.Mes_Ano = Revenue.Mes_Ano'
+      'LEFT JOIN'
+      '    ('
+      
+        '        -- Subquery para calcular os gastos totais por m'#234's para ' +
+        'o ano selecionado'
+      '        SELECT'
+      '            DATE_FORMAT(data_gasto, '#39'%Y-%m'#39') AS Mes_Ano,'
+      '            SUM(valor) AS Total_Gastos'
+      '        FROM'
+      '            gastos'
+      '        -- WHERE YEAR(data_gasto) = 2025'
+      '        GROUP BY'
+      '            Mes_Ano'
+      '    ) AS Expenses ON AllMonths.Mes_Ano = Expenses.Mes_Ano'
+      'ORDER BY'
+      '    AllMonths.Mes_Ano DESC;')
+    Left = 722
+    Top = 600
+  end
+  object DsLucrosGastos: TDataSource
+    DataSet = query_LucrosGastos
+    Left = 827
+    Top = 600
+  end
+  object query_gastosFiltro: TFDQuery
+    Connection = fd
+    SQL.Strings = (
+      'SELECT'
+      '    cg.nome_categoria AS Categoria,'
+      '    SUM(g.valor) AS Total_Gasto_Por_Categoria'
+      'FROM'
+      '    gastos g'
+      'LEFT JOIN'
+      '    categorias_gasto cg ON g.id_categoria = cg.id_categoria'
+      '-- WHERE'
+      ' --   YEAR(g.data_gasto) = :Ano AND'
+      ' --   MONTH(g.data_gasto) = :Mes AND'
+      '--    (:IdCategoria IS NULL OR g.id_categoria = :IdCategoria)'
+      'GROUP BY'
+      '    cg.nome_categoria'
+      'ORDER BY'
+      '    cg.nome_categoria;')
+    Left = 730
+    Top = 672
+  end
+  object DsGastosFiltro: TDataSource
+    DataSet = query_gastosFiltro
+    Left = 835
+    Top = 672
   end
 end

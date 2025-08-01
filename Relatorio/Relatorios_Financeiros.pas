@@ -44,6 +44,18 @@ type
     dtpAno: TDateTimePicker;
     btnFiltrarMes: TButton;
     grdFaturamentoMensal: TDBGrid;
+    tsLucrosXgastos: TTabSheet;
+    Panel4: TPanel;
+    Label8: TLabel;
+    dtpAnoLucrosGastos: TDateTimePicker;
+    btnFiltrarLucrosGastosClick: TButton;
+    grdLucrosGastos: TDBGrid;
+    tsGastos: TTabSheet;
+    Panel5: TPanel;
+    Label9: TLabel;
+    dtpAnoMesLucrosGastos: TDateTimePicker;
+    btnFiltrarGastosClick: TButton;
+    grdGastos: TDBGrid;
     procedure btnFiltrarFaturamentoClick(Sender: TObject);
     procedure btnImprimirClick(Sender: TObject);
     procedure btnFiltrarPendenteClick(Sender: TObject);
@@ -51,6 +63,8 @@ type
     procedure BtnFiltrarMetodoClick(Sender: TObject);
     procedure BtnExportarMetodoClick(Sender: TObject);
     procedure btnFiltrarMesClick(Sender: TObject);
+    procedure btnFiltrarLucrosGastosClickClick(Sender: TObject);
+    procedure btnFiltrarGastosClickClick(Sender: TObject);
   private
       procedure ExportarParaCSV(const FileName: string);
       procedure carregarCombobox(
@@ -139,6 +153,107 @@ begin
   dm.query_Faturamento_Servico.Open;
 end;
 
+procedure TFrmRelatorios_Financeiros.btnFiltrarGastosClickClick(
+  Sender: TObject);
+var
+  AnoSelecionado: string; // Continua Integer
+  MesSelecionado: string; // NOVO: Variável para o mês
+begin
+
+  AnoSelecionado := FormatDateTime('yyyy', dtpAnoMesLucrosGastos.Date);
+  MesSelecionado := FormatDateTime('mm', dtpAnoMesLucrosGastos.Date);
+
+  dm.query_gastosFiltro.Close;
+  dm.query_gastosFiltro.SQL.Clear;
+  dm.query_gastosFiltro.Params.Clear; // Limpa os parâmetros para evitar conflitos
+
+  // A SQL agora filtra por MÊS E ANO
+  dm.query_gastosFiltro.SQL.Text :=
+    'SELECT ' +
+    '    cg.nome_categoria AS Categoria, ' +
+    '    SUM(g.valor) AS Total_Gasto_Por_Categoria ' +
+    'FROM ' +
+    '    gastos g ' +
+    'LEFT JOIN ' +
+    '    categorias_gasto cg ON g.id_categoria = cg.id_categoria ' +
+    'WHERE ' +
+    '    YEAR(g.data_gasto) = :Ano AND ' + // Filtro por Ano
+    '    MONTH(g.data_gasto) = :Mes ' + // Filtro por Mês
+    'GROUP BY ' +
+    '    cg.nome_categoria ' +
+    'ORDER BY ' +
+    '    cg.nome_categoria;';
+
+  // Atribui os parâmetros de Mês e Ano
+  dm.query_gastosFiltro.ParamByName('Ano').AsString := AnoSelecionado;
+  dm.query_gastosFiltro.ParamByName('Mes').AsString := MesSelecionado; // NOVO: Atribuindo o parâmetro Mes
+
+  dm.query_gastosFiltro.Open; // Abre a query
+end;
+
+
+procedure TFrmRelatorios_Financeiros.btnFiltrarLucrosGastosClickClick(
+  Sender: TObject);
+var
+  AnoSelecionado: string; // Mantido como string para ser compatível com btnFiltrarMesClick
+begin
+  // Obtém o ano como string, formatado para 'yyyy'
+  // IMPORTANTE: Use dtpAnoLucrosGastos aqui, que é o seu DateTimePicker para esta aba.
+  AnoSelecionado := FormatDateTime('yyyy', dtpAnoLucrosGastos.Date);
+
+  dm.query_LucrosGastos.Close; // Fecha a query antes de executar
+  dm.query_LucrosGastos.SQL.Clear; // Limpa o SQL existente
+  dm.query_LucrosGastos.Params.Clear; // <<< IMPORTANTE: Limpa todos os parâmetros anteriores para evitar conflitos
+
+  // <<< ATENÇÃO: COPIE E COLE ESTA STRING SQL INTEIRA DIRETAMENTE NO SEU CÓDIGO >>>
+  // Isso garante que não haja caracteres ocultos ou erros de digitação no nome do parâmetro.
+  dm.query_LucrosGastos.SQL.Text :=
+    'SELECT ' +
+    '    AllMonths.Mes_Ano, ' +
+    '    COALESCE(Revenue.Receita_Liquida_Servicos, 0) AS Receita_Liquida, ' +
+    '    COALESCE(Expenses.Total_Gastos, 0) AS Total_Gastos, ' +
+    '    (COALESCE(Revenue.Receita_Liquida_Servicos, 0) - COALESCE(Expenses.Total_Gastos, 0)) AS Lucro_Liquido ' +
+    'FROM ' +
+    '    ( ' +
+    '        SELECT DATE_FORMAT(data, ''%Y-%m'') AS Mes_Ano FROM agendamentos ' +
+    '        WHERE YEAR(data) = :Ano ' + // Verifique a grafia exata de ":Ano" aqui
+    '        UNION ' +
+    '        SELECT DATE_FORMAT(data_gasto, ''%Y-%m'') AS Mes_Ano FROM gastos ' +
+    '        WHERE YEAR(data_gasto) = :Ano ' + // Verifique a grafia exata de ":Ano" aqui
+    '    ) AS AllMonths ' +
+    'LEFT JOIN ' +
+    '    ( ' +
+    '        SELECT ' +
+    '            DATE_FORMAT(a.data, ''%Y-%m'') AS Mes_Ano, ' +
+    '            SUM(ags.preco - COALESCE(ags.desconto, 0)) AS Receita_Liquida_Servicos ' +
+    '        FROM ' +
+    '            agendamentos AS a ' +
+    '        LEFT JOIN ' +
+    '            agendamento_servicos AS ags ON ags.idAgendamento = a.id ' +
+    '        WHERE YEAR(a.data) = :Ano ' + // Verifique a grafia exata de ":Ano" aqui
+    '        GROUP BY ' +
+    '            Mes_Ano ' +
+    '    ) AS Revenue ON AllMonths.Mes_Ano = Revenue.Mes_Ano ' +
+    'LEFT JOIN ' +
+    '    ( ' +
+    '        SELECT ' +
+    '            DATE_FORMAT(data_gasto, ''%Y-%m'') AS Mes_Ano, ' +
+    '            SUM(valor) AS Total_Gastos ' +
+    '        FROM ' +
+    '            gastos ' +
+    '        WHERE YEAR(data_gasto) = :Ano ' + // Verifique a grafia exata de ":Ano" aqui
+    '        GROUP BY ' +
+    '            Mes_Ano ' +
+    '    ) AS Expenses ON AllMonths.Mes_Ano = Expenses.Mes_Ano ' +
+    'ORDER BY ' +
+    '    AllMonths.Mes_Ano DESC;';
+
+  // Atribui o parâmetro do Ano como String, compatível com btnFiltrarMesClick
+  dm.query_LucrosGastos.ParamByName('Ano').AsString := AnoSelecionado;
+
+  dm.query_LucrosGastos.Open; // Abre a query para gerar o relatório
+end;
+
 procedure TFrmRelatorios_Financeiros.btnFiltrarMesClick(Sender: TObject);
 var
   Ano: string;
@@ -170,6 +285,7 @@ begin
   dm.query_Faturamento_Mensal.ParamByName('Ano').AsString := Ano;
   dm.query_Faturamento_Mensal.Open;
 end;
+
 procedure TFrmRelatorios_Financeiros.BtnFiltrarMetodoClick(Sender: TObject);
 begin
   dm.query_Metodos_Pagamento.Close;

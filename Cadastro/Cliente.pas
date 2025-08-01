@@ -52,6 +52,7 @@ type
     procedure rbCPFClick(Sender: TObject);
     procedure EdtBuscarNomeChange(Sender: TObject);
     procedure EdtBuscasCPFChange(Sender: TObject);
+    procedure EdtCPFChange(Sender: TObject);
   private
 
     procedure limpar;
@@ -194,6 +195,7 @@ begin
   btnEditar.Enabled := False;
   btnExcluir.Enabled := False;
   limpar;
+  DateNascimento.Enabled := True;
 end;
 
 procedure TFrmCliente.btnSalvarClick(Sender: TObject);
@@ -329,6 +331,7 @@ begin
   btnEditar.Enabled := True;
   btnExcluir.Enabled := True;
   dm.tb_cliente.Edit;
+  EdtCPFChange(EdtCPF);
 
   id_cliente_selecionado := dm.query_Listar_Cliente.FieldByName('id').AsInteger;
 
@@ -403,6 +406,22 @@ end;
 procedure TFrmCliente.EdtBuscasCPFChange(Sender: TObject);
 begin
 buscarCPFCNPJ;
+end;
+
+procedure TFrmCliente.EdtCPFChange(Sender: TObject);
+begin
+  // Remove espaços em branco antes de verificar o comprimento
+  if Length(Trim(EdtCPF.Text)) > 11 then //CNPJ tem mais de 11 dígitos (sem máscara)
+  begin
+    DateNascimento.Date := EncodeDate(1900, 1, 1); // Define a data para 01/01/1900
+    DateNascimento.Enabled := False; // Desabilita o componente DatePicker
+  end
+  else
+  begin
+    DateNascimento.Enabled := True; // Habilita o componente DatePicker
+    // Opcional: Se desejar, pode limpar a data ou definir um valor padrão quando reabilitado
+    // DateNascimento.Date := Now; // Ou DateNascimento.Clear;
+  end;
 end;
 
 procedure TFrmCliente.FormCreate(Sender: TObject);

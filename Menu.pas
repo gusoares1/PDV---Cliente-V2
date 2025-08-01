@@ -33,11 +33,13 @@ type
     Parametro1: TMenuItem;
     TimerLembretes: TTimer;
     btnTestarLembretes: TButton;
+    categoriadegastos1: TMenuItem;
+    financeiro1: TMenuItem;
+    Financeiro2: TMenuItem;
     procedure Usuarios1Click(Sender: TObject);
     procedure Funcionarios1Click(Sender: TObject);
     procedure Funcionarios2Click(Sender: TObject);
     procedure FormShow(Sender: TObject);
-    procedure fornecedores1Click(Sender: TObject);
     procedure Sair2Click(Sender: TObject);
     procedure Agendamento2Click(Sender: TObject);
     procedure Cliente2Click(Sender: TObject);
@@ -52,6 +54,8 @@ type
     procedure TimerLembretesTimer(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure btnTestarLembretesClick(Sender: TObject);
+    procedure categoriadegastos1Click(Sender: TObject);
+    procedure Financeiro2Click(Sender: TObject);
 
   private
   FUltimoEnvioLembretes: TDateTime;
@@ -72,7 +76,7 @@ implementation
 
 uses Usuarios, Funcionario, Cargos, Modulo, Fornecedores, login, Agendamento,
   Cliente, Servicos, Vincular_Servicos, forma_pagamento,
-  Relatorios_Operacionais, Relatorios_Financeiros, parametro;
+  Relatorios_Operacionais, Relatorios_Financeiros, parametro, Gastos;
 
 procedure TfrmMenu.Agendamento2Click(Sender: TObject);
 begin
@@ -131,6 +135,12 @@ end;
 procedure TfrmMenu.btnTestarLembretesClick(Sender: TObject);
 begin
   EnviarLembretesAgendamentos(Date); // Força o envio para agendamentos de AMANHÃ
+end;
+
+procedure TfrmMenu.categoriadegastos1Click(Sender: TObject);
+begin
+  FrmCategoriaGastos := TFrmCategoriaGastos.Create(self);
+  FrmCategoriaGastos.ShowModal;
 end;
 
 procedure TfrmMenu.btnEnviarFuncionariosClick(Sender: TObject);
@@ -550,6 +560,12 @@ begin
 end;
 
 
+procedure TfrmMenu.Financeiro2Click(Sender: TObject);
+begin
+ FrmGastos := TFrmGastos.Create(self);
+ FrmGastos.showModal;
+end;
+
 procedure TfrmMenu.Formadepagamento1Click(Sender: TObject);
 begin
  FrmFormaPgto := TFrmFormaPgto.Create(self);
@@ -619,12 +635,6 @@ frmAgendamentoServ :=TfrmAgendamentoServ.create(self);
 frmAgendamentoServ.ShowModal;
 end;
 
-
-procedure TfrmMenu.fornecedores1Click(Sender: TObject);
-begin
-  frmFornecedores := TfrmFornecedores.Create(self);
-  frmFornecedores.ShowModal;
-end;
 
 procedure TfrmMenu.Usuarios1Click(Sender: TObject);
 begin

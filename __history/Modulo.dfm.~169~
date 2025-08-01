@@ -1,0 +1,1211 @@
+object dm: Tdm
+  OnCreate = DataModuleCreate
+  Height = 865
+  Width = 1180
+  object fd: TFDConnection
+    Params.Strings = (
+      'Server=localhost'
+      'Database=pdv'
+      'User_Name=root'
+      'Password=123'
+      'DriverID=MySQL')
+    Connected = True
+    LoginPrompt = False
+    Top = 8
+  end
+  object FDPhysMySQLDriverLink1: TFDPhysMySQLDriverLink
+    VendorLib = 
+      'C:\Users\Pichau\OneDrive\Documentos\Embarcadero\Studio\Projects\' +
+      'PDV - Cliente V2\Lib\libmySQL.dll'
+    Left = 88
+    Top = 8
+  end
+  object tb_Cargos: TFDTable
+    IndexFieldNames = 'id'
+    Connection = fd
+    ResourceOptions.AssignedValues = [rvEscapeExpand]
+    TableName = 'pdv.cargos'
+    Left = 16
+    Top = 73
+  end
+  object query_cargos: TFDQuery
+    Connection = fd
+    SQL.Strings = (
+      'select * from cargos')
+    Left = 88
+    Top = 73
+    object query_cargosid: TFDAutoIncField
+      DisplayLabel = 'ID'
+      FieldName = 'id'
+      Origin = 'id'
+      ProviderFlags = [pfInWhere, pfInKey]
+      ReadOnly = False
+    end
+    object query_cargoscargo: TStringField
+      FieldName = 'cargo'
+      Origin = 'cargo'
+      Required = True
+      Size = 30
+    end
+  end
+  object DScargos: TDataSource
+    DataSet = query_cargos
+    Left = 156
+    Top = 73
+  end
+  object tb_funcionario: TFDTable
+    IndexFieldNames = 'id'
+    Connection = fd
+    ResourceOptions.AssignedValues = [rvEscapeExpand]
+    TableName = 'pdv.funcionarios'
+    Left = 24
+    Top = 137
+    object tb_funcionarioid: TFDAutoIncField
+      FieldName = 'id'
+      Origin = 'id'
+      ProviderFlags = [pfInWhere, pfInKey]
+      ReadOnly = False
+    end
+    object tb_funcionarionome: TStringField
+      FieldName = 'nome'
+      Origin = 'nome'
+      Required = True
+      Size = 30
+    end
+    object tb_funcionariocpf: TStringField
+      FieldName = 'cpf'
+      Origin = 'cpf'
+      Required = True
+    end
+    object tb_funcionariotelefone: TStringField
+      AutoGenerateValue = arDefault
+      FieldName = 'telefone'
+      Origin = 'telefone'
+      Size = 15
+    end
+    object tb_funcionarioendereco: TStringField
+      AutoGenerateValue = arDefault
+      FieldName = 'endereco'
+      Origin = 'endereco'
+      Size = 50
+    end
+    object tb_funcionariocargo: TStringField
+      FieldName = 'cargo'
+      Origin = 'cargo'
+      Required = True
+      Size = 25
+    end
+    object tb_funcionariodata: TDateField
+      FieldName = 'data'
+      Origin = 'data'
+      Required = True
+    end
+  end
+  object DSfuncionario: TDataSource
+    DataSet = query_func
+    Left = 177
+    Top = 137
+  end
+  object query_func: TFDQuery
+    Connection = fd
+    SQL.Strings = (
+      'select * from funcionarios')
+    Left = 101
+    Top = 137
+  end
+  object tb_usuario: TFDTable
+    IndexFieldNames = 'id'
+    Connection = fd
+    ResourceOptions.AssignedValues = [rvEscapeExpand]
+    TableName = 'pdv.usuarios'
+    Left = 16
+    Top = 200
+    object tb_usuarioid: TFDAutoIncField
+      FieldName = 'id'
+      Origin = 'id'
+      ProviderFlags = [pfInWhere, pfInKey]
+      ReadOnly = False
+    end
+    object tb_usuarionome: TStringField
+      FieldName = 'nome'
+      Origin = 'nome'
+      Required = True
+      Size = 30
+    end
+    object tb_usuariousuario: TStringField
+      FieldName = 'usuario'
+      Origin = 'usuario'
+      Required = True
+      Size = 30
+    end
+    object tb_usuariosenha: TStringField
+      FieldName = 'senha'
+      Origin = 'senha'
+      Required = True
+      Size = 25
+    end
+    object tb_usuariocargo: TStringField
+      FieldName = 'cargo'
+      Origin = 'cargo'
+      Required = True
+      Size = 25
+    end
+    object tb_usuarioid_funcionario: TIntegerField
+      FieldName = 'id_funcionario'
+      Origin = 'id_funcionario'
+      Required = True
+    end
+  end
+  object query_usuarios: TFDQuery
+    Connection = fd
+    SQL.Strings = (
+      'select * from usuarios')
+    Left = 92
+    Top = 200
+    object query_usuariosnome: TStringField
+      FieldName = 'nome'
+      Origin = 'nome'
+      Required = True
+      Size = 30
+    end
+    object query_usuariosusuario: TStringField
+      FieldName = 'usuario'
+      Origin = 'usuario'
+      Required = True
+      Size = 30
+    end
+    object query_usuariossenha: TStringField
+      FieldName = 'senha'
+      Origin = 'senha'
+      Required = True
+      Size = 25
+    end
+    object query_usuarioscargo: TStringField
+      FieldName = 'cargo'
+      Origin = 'cargo'
+      Required = True
+      Size = 25
+    end
+    object query_usuariosid: TFDAutoIncField
+      FieldName = 'id'
+      Origin = 'id'
+      ProviderFlags = [pfInWhere, pfInKey]
+      ReadOnly = False
+    end
+    object query_usuariosid_funcionario: TIntegerField
+      FieldName = 'id_funcionario'
+      Origin = 'id_funcionario'
+      Required = True
+    end
+  end
+  object DSusuarios: TDataSource
+    DataSet = query_usuarios
+    Left = 171
+    Top = 200
+  end
+  object tb_fornecedor: TFDTable
+    Connection = fd
+    TableName = 'pdv.categorias_gasto'
+    Left = 24
+    Top = 272
+  end
+  object query_fornecedores: TFDQuery
+    Connection = fd
+    SQL.Strings = (
+      '               select * from categorias_gasto')
+    Left = 122
+    Top = 272
+    object query_fornecedoresid_categoria: TFDAutoIncField
+      FieldName = 'id_categoria'
+      Origin = 'id_categoria'
+      ProviderFlags = [pfInWhere, pfInKey]
+      ReadOnly = False
+    end
+    object query_fornecedoresnome_categoria: TStringField
+      FieldName = 'nome_categoria'
+      Origin = 'nome_categoria'
+      Required = True
+      Size = 100
+    end
+  end
+  object DSFornecedores: TDataSource
+    DataSet = query_fornecedores
+    Left = 227
+    Top = 272
+  end
+  object tb_uf: TFDTable
+    Connection = fd
+    TableName = 'pdv.uf'
+    Left = 8
+    Top = 400
+  end
+  object query_uf: TFDQuery
+    Connection = fd
+    SQL.Strings = (
+      '               select * from uf')
+    Left = 59
+    Top = 400
+    object query_ufid: TIntegerField
+      FieldName = 'id'
+      Origin = 'id'
+      ProviderFlags = [pfInUpdate, pfInWhere, pfInKey]
+      Required = True
+    end
+    object query_ufnome: TStringField
+      AutoGenerateValue = arDefault
+      FieldName = 'nome'
+      Origin = 'nome'
+      FixedChar = True
+      Size = 255
+    end
+    object query_ufsigla: TStringField
+      AutoGenerateValue = arDefault
+      FieldName = 'sigla'
+      Origin = 'sigla'
+      FixedChar = True
+      Size = 2
+    end
+  end
+  object DsUF: TDataSource
+    DataSet = query_uf
+    Left = 109
+    Top = 400
+  end
+  object tb_municipio: TFDTable
+    IndexFieldNames = 'id'
+    Connection = fd
+    ResourceOptions.AssignedValues = [rvEscapeExpand]
+    TableName = 'pdv.municipio'
+    Left = 24
+    Top = 480
+  end
+  object query_municipio: TFDQuery
+    Connection = fd
+    SQL.Strings = (
+      '               select * from municipio')
+    Left = 117
+    Top = 480
+    object query_municipioid: TIntegerField
+      FieldName = 'id'
+      Origin = 'id'
+      ProviderFlags = [pfInUpdate, pfInWhere, pfInKey]
+      Required = True
+    end
+    object query_municipioufid: TIntegerField
+      FieldName = 'ufid'
+      Origin = 'ufid'
+      Required = True
+    end
+    object query_municipionome: TStringField
+      AutoGenerateValue = arDefault
+      FieldName = 'nome'
+      Origin = 'nome'
+      FixedChar = True
+      Size = 255
+    end
+  end
+  object DsMunicipio: TDataSource
+    DataSet = query_municipio
+    Left = 206
+    Top = 480
+  end
+  object tb_cliente: TFDTable
+    IndexFieldNames = 'id'
+    Connection = fd
+    ResourceOptions.AssignedValues = [rvEscapeExpand]
+    TableName = 'cliente'
+    Left = 396
+    Top = 65535
+  end
+  object query_cliente: TFDQuery
+    Connection = fd
+    SQL.Strings = (
+      '               select * from cliente')
+    Left = 465
+    Top = 65535
+  end
+  object DsCliente: TDataSource
+    DataSet = query_cliente
+    Left = 534
+    Top = 65535
+  end
+  object query_Listar_Cliente: TFDQuery
+    Connection = fd
+    SQL.Strings = (
+      
+        'SELECT a.id,a.nome, a.documento, a.data_nascimento,a.telefone,b.' +
+        'nome AS cidade, c.nome AS estado, a.bairro, a.cep, a.endereco '
+      '    FROM cliente a '
+      '    JOIN municipio b ON a.cidade_id = b.id'
+      '    JOIN uf c ON a.estado_id = c.id')
+    Left = 621
+    Top = 65535
+    object query_Listar_Clientenome: TStringField
+      FieldName = 'nome'
+      Origin = 'nome'
+      Required = True
+    end
+    object query_Listar_Clientedocumento: TStringField
+      FieldName = 'documento'
+      Origin = 'documento'
+      Required = True
+      Size = 15
+    end
+    object query_Listar_Clientedata_nascimento: TDateField
+      AutoGenerateValue = arDefault
+      FieldName = 'data_nascimento'
+      Origin = 'data_nascimento'
+    end
+    object query_Listar_Clientetelefone: TStringField
+      AutoGenerateValue = arDefault
+      FieldName = 'telefone'
+      Origin = 'telefone'
+      Size = 15
+    end
+    object query_Listar_Clientecidade: TStringField
+      AutoGenerateValue = arDefault
+      FieldName = 'cidade'
+      Origin = 'nome'
+      ProviderFlags = []
+      ReadOnly = True
+      FixedChar = True
+    end
+    object query_Listar_Clienteestado: TStringField
+      AutoGenerateValue = arDefault
+      FieldName = 'estado'
+      Origin = 'nome'
+      ProviderFlags = []
+      ReadOnly = True
+      FixedChar = True
+    end
+    object query_Listar_Clientebairro: TStringField
+      AutoGenerateValue = arDefault
+      FieldName = 'bairro'
+      Origin = 'bairro'
+    end
+    object query_Listar_Clientecep: TStringField
+      AutoGenerateValue = arDefault
+      FieldName = 'cep'
+      Origin = 'cep'
+      Size = 10
+    end
+    object query_Listar_Clienteendereco: TStringField
+      AutoGenerateValue = arDefault
+      FieldName = 'endereco'
+      Origin = 'endereco'
+      Size = 30
+    end
+    object query_Listar_Clienteid: TFDAutoIncField
+      FieldName = 'id'
+      Origin = 'id'
+      ProviderFlags = [pfInWhere, pfInKey]
+      ReadOnly = False
+    end
+  end
+  object DsListarCliente: TDataSource
+    DataSet = query_Listar_Cliente
+    Left = 726
+    Top = 65535
+  end
+  object tb_servicos: TFDTable
+    IndexFieldNames = 'id'
+    Connection = fd
+    ResourceOptions.AssignedValues = [rvEscapeExpand]
+    TableName = 'pdv.servico'
+    Left = 396
+    Top = 65
+  end
+  object query_servicos: TFDQuery
+    Connection = fd
+    SQL.Strings = (
+      '               select * from servico')
+    Left = 473
+    Top = 65
+  end
+  object DsServicos: TDataSource
+    DataSet = query_servicos
+    Left = 548
+    Top = 65
+  end
+  object tb_agendamentoserv: TFDTable
+    Connection = fd
+    ResourceOptions.AssignedValues = [rvEscapeExpand]
+    TableName = 'pdv.agendamento_servicos'
+    Left = 396
+    Top = 128
+  end
+  object DsAgendamentoServ: TDataSource
+    DataSet = query_agendamentoserv
+    Left = 654
+    Top = 128
+  end
+  object query_agendamentoserv: TFDQuery
+    Connection = fd
+    SQL.Strings = (
+      '               select * from agendamento_servicos')
+    Left = 524
+    Top = 128
+    object query_agendamentoservidAgendamento: TIntegerField
+      FieldName = 'idAgendamento'
+      Origin = 'idAgendamento'
+      ProviderFlags = [pfInUpdate, pfInWhere, pfInKey]
+      Required = True
+    end
+    object query_agendamentoservseqServico: TIntegerField
+      FieldName = 'seqServico'
+      Origin = 'seqServico'
+      ProviderFlags = [pfInUpdate, pfInWhere, pfInKey]
+      Required = True
+    end
+    object query_agendamentoservnomeServico: TStringField
+      AutoGenerateValue = arDefault
+      FieldName = 'nomeServico'
+      Origin = 'nomeServico'
+    end
+    object query_agendamentoservpreco: TBCDField
+      AutoGenerateValue = arDefault
+      FieldName = 'preco'
+      Origin = 'preco'
+      Precision = 10
+      Size = 2
+    end
+    object query_agendamentoservdesconto: TIntegerField
+      AutoGenerateValue = arDefault
+      FieldName = 'desconto'
+      Origin = 'desconto'
+    end
+  end
+  object query_aux: TFDQuery
+    Connection = fd
+    SQL.Strings = (
+      '               select * from agendamento_servicos')
+    Left = 744
+    Top = 128
+  end
+  object DsFormaPagto: TDataSource
+    DataSet = query_formapagto
+    Left = 589
+    Top = 187
+  end
+  object tb_formapagto: TFDTable
+    IndexFieldNames = 'idFormaPagamento'
+    Connection = fd
+    ResourceOptions.AssignedValues = [rvEscapeExpand]
+    TableName = 'forma_pagamento'
+    Left = 396
+    Top = 187
+    object tb_formapagtoidFormaPagamento: TFDAutoIncField
+      FieldName = 'idFormaPagamento'
+      Origin = 'idFormaPagamento'
+      ProviderFlags = [pfInWhere, pfInKey]
+      ReadOnly = False
+    end
+    object tb_formapagtonome: TStringField
+      FieldName = 'nome'
+      Origin = 'nome'
+      Required = True
+      Size = 50
+    end
+    object tb_formapagtoparcela: TBooleanField
+      AutoGenerateValue = arDefault
+      FieldName = 'parcela'
+      Origin = 'parcela'
+    end
+    object tb_formapagtoativo: TBooleanField
+      AutoGenerateValue = arDefault
+      FieldName = 'ativo'
+      Origin = 'ativo'
+    end
+  end
+  object query_formapagto: TFDQuery
+    Connection = fd
+    SQL.Strings = (
+      '               select * from forma_pagamento')
+    Left = 493
+    Top = 187
+    object query_formapagtoidFormaPagamento: TFDAutoIncField
+      FieldName = 'idFormaPagamento'
+      Origin = 'idFormaPagamento'
+      ProviderFlags = [pfInWhere, pfInKey]
+      ReadOnly = False
+    end
+    object query_formapagtonome: TStringField
+      FieldName = 'nome'
+      Origin = 'nome'
+      Required = True
+      Size = 50
+    end
+    object query_formapagtoparcela: TBooleanField
+      AutoGenerateValue = arDefault
+      FieldName = 'parcela'
+      Origin = 'parcela'
+      OnGetText = query_formapagtoparcelaGetText
+    end
+    object query_formapagtoativo: TBooleanField
+      AutoGenerateValue = arDefault
+      FieldName = 'ativo'
+      Origin = 'ativo'
+      OnGetText = query_formapagtoativoGetText
+    end
+  end
+  object tb_agendamentopagto: TFDTable
+    Connection = fd
+    ResourceOptions.AssignedValues = [rvEscapeExpand]
+    TableName = 'agendamento_pagamento'
+    Left = 395
+    Top = 249
+  end
+  object query_agendamentopagto: TFDQuery
+    Connection = fd
+    SQL.Strings = (
+      '               select * from agendamento_pagamento')
+    Left = 534
+    Top = 249
+  end
+  object DsAgendamentoPagto: TDataSource
+    DataSet = query_agendamentopagto
+    Left = 671
+    Top = 249
+  end
+  object query_listar_agen_pagto: TFDQuery
+    Connection = fd
+    SQL.Strings = (
+      '               select * from agendamento_pagamento')
+    Left = 395
+    Top = 313
+  end
+  object DsListarPagto: TDataSource
+    DataSet = query_listar_agen_pagto
+    Left = 504
+    Top = 313
+  end
+  object tb_agendamento: TFDTable
+    IndexFieldNames = 'id'
+    Connection = fd
+    ResourceOptions.AssignedValues = [rvEscapeExpand]
+    TableName = 'agendamentos'
+    Left = 32
+    Top = 336
+    object tb_agendamentoid: TFDAutoIncField
+      FieldName = 'id'
+      Origin = 'id'
+      ProviderFlags = [pfInWhere, pfInKey]
+      ReadOnly = False
+    end
+    object tb_agendamentodata: TDateField
+      AutoGenerateValue = arDefault
+      FieldName = 'data'
+      Origin = 'data'
+    end
+    object tb_agendamentohora: TTimeField
+      AutoGenerateValue = arDefault
+      FieldName = 'hora'
+      Origin = 'hora'
+    end
+    object tb_agendamentoCliente: TStringField
+      AutoGenerateValue = arDefault
+      FieldName = 'Cliente'
+      Origin = 'Cliente'
+      Size = 35
+    end
+    object tb_agendamentoDescricao: TStringField
+      AutoGenerateValue = arDefault
+      FieldName = 'Descricao'
+      Origin = 'Descricao'
+      Size = 50
+    end
+    object tb_agendamentoConfirmacaoCliente: TShortintField
+      AutoGenerateValue = arDefault
+      FieldName = 'ConfirmacaoCliente'
+      Origin = 'ConfirmacaoCliente'
+    end
+    object tb_agendamentoRealizado: TShortintField
+      AutoGenerateValue = arDefault
+      FieldName = 'Realizado'
+      Origin = 'Realizado'
+    end
+    object tb_agendamentoFuncionario: TStringField
+      FieldName = 'Funcionario'
+      Origin = 'Funcionario'
+      Required = True
+      Size = 15
+    end
+    object tb_agendamentohoras_trabalhadas: TIntegerField
+      AutoGenerateValue = arDefault
+      FieldName = 'horas_trabalhadas'
+      Origin = 'horas_trabalhadas'
+    end
+    object tb_agendamentocliente_id: TIntegerField
+      AutoGenerateValue = arDefault
+      FieldName = 'cliente_id'
+      Origin = 'cliente_id'
+    end
+  end
+  object query_agendamentos: TFDQuery
+    Connection = fd
+    SQL.Strings = (
+      '               select * from agendamentos')
+    Left = 141
+    Top = 336
+    object query_agendamentosid: TFDAutoIncField
+      FieldName = 'id'
+      Origin = 'id'
+      ProviderFlags = [pfInWhere, pfInKey]
+      ReadOnly = False
+    end
+    object query_agendamentosdata: TDateField
+      AutoGenerateValue = arDefault
+      FieldName = 'data'
+      Origin = 'data'
+    end
+    object query_agendamentoshora: TTimeField
+      AutoGenerateValue = arDefault
+      FieldName = 'hora'
+      Origin = 'hora'
+    end
+    object query_agendamentosCliente: TStringField
+      AutoGenerateValue = arDefault
+      FieldName = 'Cliente'
+      Origin = 'Cliente'
+      Size = 35
+    end
+    object query_agendamentosFuncionario: TStringField
+      FieldName = 'Funcionario'
+      Origin = 'Funcionario'
+      Required = True
+      Size = 15
+    end
+    object query_agendamentosConfirmacaoCliente: TShortintField
+      AutoGenerateValue = arDefault
+      FieldName = 'ConfirmacaoCliente'
+      Origin = 'ConfirmacaoCliente'
+    end
+    object query_agendamentoshoras_trabalhadas: TIntegerField
+      AutoGenerateValue = arDefault
+      FieldName = 'horas_trabalhadas'
+      Origin = 'horas trabalhadas'
+    end
+    object query_agendamentosRealizado: TShortintField
+      AutoGenerateValue = arDefault
+      FieldName = 'Realizado'
+      Origin = 'Realizado'
+    end
+    object query_agendamentosDescricao: TStringField
+      AutoGenerateValue = arDefault
+      FieldName = 'Descricao'
+      Origin = 'Descricao'
+      Size = 50
+    end
+    object query_agendamentoscliente_id: TIntegerField
+      AutoGenerateValue = arDefault
+      FieldName = 'cliente_id'
+      Origin = 'cliente_id'
+    end
+  end
+  object DsAgendamento: TDataSource
+    DataSet = query_agendamentos
+    Left = 251
+    Top = 336
+  end
+  object query_agendamentodiario: TFDQuery
+    Connection = fd
+    SQL.Strings = (
+      '               select * from agendamentos')
+    Left = 394
+    Top = 376
+  end
+  object DsAgendamentoDiario: TDataSource
+    DataSet = query_agendamentodiario
+    Left = 531
+    Top = 376
+  end
+  object query_servicosRealizado: TFDQuery
+    Connection = fd
+    SQL.Strings = (
+      '    SELECT Funcionario, '
+      '    COUNT(*) AS TotalAgendamento, '
+      '    SUM(horas_trabalhadas) AS TotalHoras '
+      '    FROM agendamentos '
+      '    WHERE Realizado = 1 '
+      '    GROUP BY Funcionario, Servico'
+      '    ORDER BY Funcionario;')
+    Left = 394
+    Top = 440
+  end
+  object DsServicosRealizado: TDataSource
+    DataSet = query_servicosRealizado
+    Left = 515
+    Top = 440
+  end
+  object query_agendamentos_pendentes: TFDQuery
+    Connection = fd
+    SQL.Strings = (
+      '    SELECT a.id, a.data, a.hora, a.Cliente, a.Servico, '
+      '    c.telefone AS TelefoneCliente '
+      '    FROM agendamentos a '
+      '    LEFT JOIN cliente c ON a.Cliente = c.nome '
+      '    WHERE a.ConfirmacaoCliente = 0 '
+      '    ORDER BY a.data, a.hora;')
+    Left = 394
+    Top = 504
+  end
+  object DAgendamentosPendentes: TDataSource
+    DataSet = query_agendamentos_pendentes
+    Left = 563
+    Top = 504
+  end
+  object query_Faturamento_Servico: TFDQuery
+    Connection = fd
+    SQL.Strings = (
+      '    SELECT a.id, a.data, a.hora, a.Cliente, a.Servico, '
+      '    c.telefone AS TelefoneCliente '
+      '    FROM agendamentos a '
+      '    LEFT JOIN cliente c ON a.Cliente = c.nome '
+      '    WHERE a.ConfirmacaoCliente = 0 '
+      '    ORDER BY a.data, a.hora;')
+    Left = 394
+    Top = 568
+  end
+  object DsFaturamentoServico: TDataSource
+    DataSet = query_Faturamento_Servico
+    Left = 539
+    Top = 568
+  end
+  object query_Pagamentos_Pendentes: TFDQuery
+    Connection = fd
+    SQL.Strings = (
+      'SELECT'
+      '  a.data AS DataAgendamento,'
+      '  c.nome AS Cliente,'
+      '   c.telefone AS TelefoneCliente,'
+      '  a.Funcionario,'
+      
+        '  SUM(ags.preco - COALESCE(ags.desconto, 0)) AS ValorTotalServic' +
+        'os, -- <<< CORRIGIDO AQUI'
+      '  COALESCE(SUM(ap.valor_pago), 0) AS ValorTotalPago,'
+      
+        '  (SUM(ags.preco - COALESCE(ags.desconto, 0)) - COALESCE(SUM(ap.' +
+        'valor_pago), 0)) AS ValorPendente, -- <<< CORRIGIDO AQUI TAMB'#201'M'
+      
+        '  GROUP_CONCAT(ags.nomeServico SEPARATOR '#39'; '#39') AS ServicosAgenda' +
+        'dos'
+      'FROM'
+      '  agendamentos AS a'
+      'JOIN'
+      '  cliente AS c ON a.cliente_id = c.id'
+      'LEFT JOIN'
+      '  agendamento_servicos AS ags ON a.id = ags.idAgendamento'
+      'LEFT JOIN'
+      '  agendamento_pagamento AS ap ON a.id = ap.idAgendamento'
+      ''
+      'GROUP BY'
+      '  a.id, a.data, c.nome, a.Funcionario'
+      'HAVING'
+      
+        '  (SUM(ags.preco - COALESCE(ags.desconto, 0)) - COALESCE(SUM(ap.' +
+        'valor_pago), 0)) > 0'
+      'ORDER BY'
+      '  a.data, c.nome;')
+    Left = 386
+    Top = 640
+    object query_Pagamentos_PendentesDataAgendamento: TDateField
+      AutoGenerateValue = arDefault
+      FieldName = 'DataAgendamento'
+      Origin = 'data'
+    end
+    object query_Pagamentos_PendentesCliente: TStringField
+      AutoGenerateValue = arDefault
+      FieldName = 'Cliente'
+      Origin = 'nome'
+      ProviderFlags = []
+      ReadOnly = True
+      Size = 40
+    end
+    object query_Pagamentos_PendentesTelefoneCliente: TStringField
+      AutoGenerateValue = arDefault
+      FieldName = 'TelefoneCliente'
+      Origin = 'telefone'
+      ProviderFlags = []
+      ReadOnly = True
+      Size = 15
+    end
+    object query_Pagamentos_PendentesFuncionario: TStringField
+      FieldName = 'Funcionario'
+      Origin = 'Funcionario'
+      Required = True
+      Size = 15
+    end
+    object query_Pagamentos_PendentesValorTotalServicos: TFMTBCDField
+      AutoGenerateValue = arDefault
+      FieldName = 'ValorTotalServicos'
+      Origin = 'ValorTotalServicos'
+      ProviderFlags = []
+      ReadOnly = True
+      Precision = 35
+      Size = 2
+    end
+    object query_Pagamentos_PendentesValorTotalPago: TFMTBCDField
+      AutoGenerateValue = arDefault
+      FieldName = 'ValorTotalPago'
+      Origin = 'ValorTotalPago'
+      ProviderFlags = []
+      ReadOnly = True
+      Precision = 32
+      Size = 2
+    end
+    object query_Pagamentos_PendentesValorPendente: TFMTBCDField
+      AutoGenerateValue = arDefault
+      FieldName = 'ValorPendente'
+      Origin = 'ValorPendente'
+      ProviderFlags = []
+      ReadOnly = True
+      Precision = 36
+      Size = 2
+    end
+    object query_Pagamentos_PendentesServicosAgendados: TStringField
+      AutoGenerateValue = arDefault
+      FieldName = 'ServicosAgendados'
+      Origin = 'ServicosAgendados'
+      ProviderFlags = []
+      ReadOnly = True
+      Size = 4096
+    end
+  end
+  object DsPagamentosPendentes: TDataSource
+    DataSet = query_Pagamentos_Pendentes
+    Left = 547
+    Top = 640
+  end
+  object DsMetodosPagamento: TDataSource
+    DataSet = query_Metodos_Pagamento
+    Left = 867
+    Top = 312
+  end
+  object query_Metodos_Pagamento: TFDQuery
+    Connection = fd
+    SQL.Strings = (
+      'SELECT '
+      '    tipo_pagamento AS Metodo,'
+      '    COUNT(*) AS TotalTransacoes,'
+      '    SUM(valor_pago) AS TotalRecebido,'
+      '    AVG(parcemento) AS MediaParcelas'
+      'FROM agendamento_pagamento'
+      'GROUP BY tipo_pagamento'
+      'ORDER BY TotalRecebido DESC;')
+    Left = 714
+    Top = 312
+  end
+  object DsFaturamentoMensal: TDataSource
+    DataSet = query_Faturamento_Mensal
+    Left = 875
+    Top = 376
+  end
+  object query_Faturamento_Mensal: TFDQuery
+    Connection = fd
+    SQL.Strings = (
+      'SELECT '
+      '    DATE_FORMAT(a.data, '#39'%Y-%m'#39') AS Mes_Ano,'
+      '    COALESCE(SUM(serv.total_liquido), 0) AS Total_Liquido,'
+      '    COALESCE(SUM(pag.total_pago), 0) AS Total_Recebido,'
+      
+        '    COALESCE(SUM(serv.total_liquido), 0) - COALESCE(SUM(pag.tota' +
+        'l_pago), 0) AS Diferenca'
+      'FROM agendamentos a'
+      'LEFT JOIN ('
+      '    SELECT idAgendamento, SUM(preco - desconto) AS total_liquido'
+      '    FROM agendamento_servicos'
+      '    GROUP BY idAgendamento'
+      ') serv ON serv.idAgendamento = a.id'
+      'LEFT JOIN ('
+      '    SELECT idAgendamento, SUM(valor_pago) AS total_pago'
+      '    FROM agendamento_pagamento'
+      '    GROUP BY idAgendamento'
+      ') pag ON pag.idAgendamento = a.id'
+      'GROUP BY DATE_FORMAT(a.data, '#39'%Y-%m'#39')'
+      'ORDER BY Mes_Ano DESC;'
+      '')
+    Left = 714
+    Top = 376
+    object query_Faturamento_MensalMes_Ano: TStringField
+      AutoGenerateValue = arDefault
+      FieldName = 'Mes_Ano'
+      Origin = 'Mes_Ano'
+      ProviderFlags = []
+      ReadOnly = True
+      Size = 7
+    end
+    object query_Faturamento_MensalTotal_Liquido: TFMTBCDField
+      AutoGenerateValue = arDefault
+      FieldName = 'Total_Liquido'
+      Origin = 'Total_Liquido'
+      ProviderFlags = []
+      ReadOnly = True
+      OnGetText = query_Faturamento_MensalTotal_LiquidoGetText
+      Precision = 57
+      Size = 2
+    end
+    object query_Faturamento_MensalTotal_Recebido: TFMTBCDField
+      AutoGenerateValue = arDefault
+      FieldName = 'Total_Recebido'
+      Origin = 'Total_Recebido'
+      ProviderFlags = []
+      ReadOnly = True
+      OnGetText = query_Faturamento_MensalTotal_RecebidoGetText
+      Precision = 54
+      Size = 2
+    end
+    object query_Faturamento_MensalDiferenca: TFMTBCDField
+      AutoGenerateValue = arDefault
+      FieldName = 'Diferenca'
+      Origin = 'Diferenca'
+      ProviderFlags = []
+      ReadOnly = True
+      OnGetText = query_Faturamento_MensalDiferencaGetText
+      Precision = 58
+      Size = 2
+    end
+  end
+  object tb_config_whatsapp: TFDTable
+    Connection = fd
+    ResourceOptions.AssignedValues = [rvEscapeExpand]
+    TableName = 'config_whatsapp'
+    Left = 716
+    Top = 456
+  end
+  object query_config_whatsapp: TFDQuery
+    Connection = fd
+    SQL.Strings = (
+      '               select * from config_whatsapp')
+    Left = 860
+    Top = 456
+  end
+  object query_enviarfuc: TFDQuery
+    Connection = fd
+    SQL.Strings = (
+      'SELECT'
+      '  a.id,'
+      '  a.data,'
+      '  a.hora,'
+      '  a.descricao,'
+      '  a.ConfirmacaoCliente,'
+      '  a.horas_trabalhadas,'
+      '  a.Realizado,'
+      '  a.Funcionario,'
+      '  a.cliente_id,'
+      '  a.Cliente,'
+      '  c.endereco,'
+      '  c.cep,'
+      
+        '  GROUP_CONCAT(ags.nomeServico SEPARATOR '#39', '#39') AS ServicosDoAgen' +
+        'damento -- Corrigido SEPARATOR'
+      'FROM'
+      '  agendamentos AS a'
+      'JOIN'
+      '  cliente AS c ON a.cliente_id = c.id'
+      'LEFT JOIN'
+      '  agendamento_servicos AS ags ON a.id = ags.idAgendamento'
+      ''
+      'GROUP BY'
+      '  a.id,'
+      '  a.data,'
+      '  a.hora, -- Removi a duplicidade, j'#225' existia antes'
+      '  a.descricao,'
+      '  a.ConfirmacaoCliente,'
+      '  a.horas_trabalhadas,'
+      '  a.Realizado,'
+      '  a.Funcionario,'
+      '  a.Cliente,'
+      '  c.endereco,'
+      '  c.cep'
+      'ORDER BY'
+      '  a.Funcionario, a.hora;')
+    Left = 716
+    Top = 528
+  end
+  object query_vencimento: TFDQuery
+    Connection = fd
+    SQL.Strings = (
+      'SELECT'
+      '  a.data AS DataAgendamento,'
+      '  c.nome AS NomeCliente,'
+      '  c.telefone AS TelefoneCliente,'
+      '  ags.nomeServico,'
+      '  ags.idagendamento, -- J'#225' adicionado'
+      '  ags.data_vencimento AS DataVencimentoServico,'
+      '  a.Funcionario,'
+      '  -- Coluna calculada para o Status do Vencimento'
+      '  CASE'
+      '    WHEN ags.data_vencimento IS NULL THEN '#39'Sem Vencimento'#39
+      '    WHEN ags.data_vencimento < CURDATE() THEN '#39'Vencido'#39
+      
+        '    WHEN ags.data_vencimento BETWEEN CURDATE() AND DATE_ADD(CURD' +
+        'ATE(), INTERVAL 5 DAY) THEN '#39'Pr'#243'ximo (5 dias)'#39
+      '    ELSE '#39'Vencer'#225' em Breve'#39
+      '  END AS StatusVencimento,'
+      '  -- Coluna para a cor visual (facilita o Delphi)'
+      '  CASE'
+      '    WHEN ags.data_vencimento IS NULL THEN '#39'#CCCCCC'#39
+      '    WHEN ags.data_vencimento < CURDATE() THEN '#39'#FF0000'#39
+      
+        '    WHEN ags.data_vencimento BETWEEN CURDATE() AND DATE_ADD(CURD' +
+        'ATE(), INTERVAL 5 DAY) THEN '#39'#FFFF00'#39
+      '    ELSE '#39'#FFFFFF'#39
+      '  END AS CorStatus'
+      'FROM'
+      '  agendamentos AS a'
+      'JOIN'
+      '  cliente AS c ON a.cliente_id = c.id'
+      
+        'JOIN -- Usar JOIN, pois queremos servi'#231'os que tem data de vencim' +
+        'ento'
+      '  agendamento_servicos AS ags ON a.id = ags.idAgendamento'
+      
+        '-- Adicionar a cl'#225'usula WHERE para filtrar o per'#237'odo de datas do' +
+        ' relat'#243'rio'
+      '-- WHERE ags.data_vencimento IS NOT NULL'
+      
+        '-- AND ags.data_vencimento BETWEEN :DataInicio AND :DataFim -- P' +
+        'ara uso no Delphi, com par'#226'metros'
+      
+        '-- Para testar diretamente no MySQL, substitua por datas literai' +
+        's:'
+      '-- AND ags.data_vencimento BETWEEN '#39'2025-01-01'#39' AND '#39'2025-12-31'#39
+      'GROUP BY'
+      '  a.data,'
+      '  c.nome,'
+      '  c.telefone,'
+      '  ags.nomeServico,'
+      '  ags.idagendamento,'
+      '  ags.data_vencimento,'
+      '  a.Funcionario -- Inclua todas as colunas n'#227'o agregadas'
+      'ORDER BY'
+      '  ags.data_vencimento ASC, c.nome;')
+    Left = 378
+    Top = 712
+  end
+  object DsVencimento: TDataSource
+    DataSet = query_vencimento
+    Left = 539
+    Top = 712
+  end
+  object tb_gastos: TFDTable
+    Active = True
+    IndexFieldNames = 'id_gasto'
+    Connection = fd
+    ResourceOptions.AssignedValues = [rvEscapeExpand]
+    TableName = 'gastos'
+    Left = 24
+    Top = 552
+    object tb_gastosid_gasto: TFDAutoIncField
+      FieldName = 'id_gasto'
+      Origin = 'id_gasto'
+      ReadOnly = False
+    end
+    object tb_gastosdata_gasto: TDateField
+      FieldName = 'data_gasto'
+      Origin = 'data_gasto'
+      Required = True
+    end
+    object tb_gastosdescricao: TStringField
+      FieldName = 'descricao'
+      Origin = 'descricao'
+      Required = True
+      Size = 255
+    end
+    object tb_gastosvalor: TBCDField
+      FieldName = 'valor'
+      Origin = 'valor'
+      Required = True
+      Precision = 10
+      Size = 2
+    end
+    object tb_gastosid_categoria: TIntegerField
+      AutoGenerateValue = arDefault
+      FieldName = 'id_categoria'
+      Origin = 'id_categoria'
+    end
+  end
+  object query_gastos: TFDQuery
+    Connection = fd
+    SQL.Strings = (
+      '               select * from gastos')
+    Left = 109
+    Top = 552
+  end
+  object DsGastos: TDataSource
+    DataSet = query_gastos
+    Left = 206
+    Top = 552
+  end
+  object query_LucrosGastos: TFDQuery
+    Connection = fd
+    SQL.Strings = (
+      'SELECT'
+      '    AllMonths.Mes_Ano,'
+      
+        '    COALESCE(Revenue.Receita_Liquida_Servicos, 0) AS Receita_Liq' +
+        'uida,'
+      '    COALESCE(Expenses.Total_Gastos, 0) AS Total_Gastos,'
+      
+        '    (COALESCE(Revenue.Receita_Liquida_Servicos, 0) - COALESCE(Ex' +
+        'penses.Total_Gastos, 0)) AS Lucro_Liquido'
+      'FROM'
+      '    ('
+      
+        '        -- Seleciona todos os meses distintos das tabelas de age' +
+        'ndamentos e gastos para o ano selecionado'
+      
+        '        SELECT DATE_FORMAT(DATA, '#39'%Y-%m'#39') AS Mes_Ano FROM agenda' +
+        'mentos'
+      '       -- WHERE YEAR(data) = 2025'
+      '        UNION'
+      
+        '        SELECT DATE_FORMAT(data_gasto, '#39'%Y-%m'#39') AS Mes_Ano FROM ' +
+        'gastos'
+      '        -- WHERE YEAR(data_gasto) = 2025'
+      '    ) AS AllMonths'
+      'LEFT JOIN'
+      '    ('
+      
+        '        -- Subquery para calcular a receita l'#237'quida de servi'#231'os ' +
+        'por m'#234's para o ano selecionado'
+      '        SELECT'
+      '            DATE_FORMAT(a.data, '#39'%Y-%m'#39') AS Mes_Ano,'
+      
+        '            SUM(ags.preco - COALESCE(ags.desconto, 0)) AS Receit' +
+        'a_Liquida_Servicos'
+      '        FROM'
+      '            agendamentos AS a'
+      '        LEFT JOIN'
+      
+        '            agendamento_servicos AS ags ON ags.idAgendamento = a' +
+        '.id'
+      '        -- WHERE YEAR(a.data) = 2025'
+      '        GROUP BY'
+      '            Mes_Ano'
+      '    ) AS Revenue ON AllMonths.Mes_Ano = Revenue.Mes_Ano'
+      'LEFT JOIN'
+      '    ('
+      
+        '        -- Subquery para calcular os gastos totais por m'#234's para ' +
+        'o ano selecionado'
+      '        SELECT'
+      '            DATE_FORMAT(data_gasto, '#39'%Y-%m'#39') AS Mes_Ano,'
+      '            SUM(valor) AS Total_Gastos'
+      '        FROM'
+      '            gastos'
+      '        -- WHERE YEAR(data_gasto) = 2025'
+      '        GROUP BY'
+      '            Mes_Ano'
+      '    ) AS Expenses ON AllMonths.Mes_Ano = Expenses.Mes_Ano'
+      'ORDER BY'
+      '    AllMonths.Mes_Ano DESC;')
+    Left = 722
+    Top = 600
+  end
+  object DsLucrosGastos: TDataSource
+    DataSet = query_LucrosGastos
+    Left = 827
+    Top = 600
+  end
+end

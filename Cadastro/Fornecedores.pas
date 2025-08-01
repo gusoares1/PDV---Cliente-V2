@@ -8,22 +8,16 @@ uses
   Vcl.DBGrids, Vcl.Mask, Vcl.StdCtrls;
 
 type
-  TFrmFornecedores = class(TForm)
+  TFrmCategoriaGastos = class(TForm)
     EdtBuscarNome: TEdit;
     Label1: TLabel;
     Label2: TLabel;
     EdtNome: TEdit;
-    Label4: TLabel;
-    EdtTel: TMaskEdit;
-    Label5: TLabel;
-    EdtEndereco: TEdit;
     DBGrid1: TDBGrid;
     btnNovo: TSpeedButton;
     btnSalvar: TSpeedButton;
     BtnEditar: TSpeedButton;
     BtnExcluir: TSpeedButton;
-    Label3: TLabel;
-    edtProduto: TEdit;
     procedure btnNovoClick(Sender: TObject);
     procedure btnSalvarClick(Sender: TObject);
     procedure FormShow(Sender: TObject);
@@ -47,7 +41,7 @@ type
   end;
 
 var
-  FrmFornecedores: TFrmFornecedores;
+  FrmCategoriaGastos: TFrmCategoriaGastos;
    id : string;
 implementation
 
@@ -57,17 +51,13 @@ uses Modulo;
 
 { TFrmFornecedores }
 
-procedure TFrmFornecedores.associarCampos;
+procedure TFrmCategoriaGastos.associarCampos;
 begin
-   dm.tb_fornecedor.FieldByName('nome').Value := edtNome.Text;
-   dm.tb_fornecedor.FieldByName('produto').Value := edtProduto.Text;
-   dm.tb_fornecedor.FieldByName('telefone').Value := edtTel.Text;
-   dm.tb_fornecedor.FieldByName('endereco').Value := EdtEndereco.Text;
+   dm.tb_fornecedor.FieldByName('nome_categoria').Value := edtNome.Text;
 
-   dm.tb_fornecedor.FieldByName('data').Value := DateToStr(Date);
 end;
 
-procedure TFrmFornecedores.BtnEditarClick(Sender: TObject);
+procedure TFrmCategoriaGastos.BtnEditarClick(Sender: TObject);
 begin
   if Trim(EdtNome.Text) = '' then
        begin
@@ -80,13 +70,10 @@ begin
        associarCampos;
        dm.query_fornecedores.Close;
        dm.query_fornecedores.SQL.Clear;
-       dm.query_fornecedores.SQL.Add('UPDATE fornecedores set nome = :nome, produto = :produto, endereco = :endereco, telefone = :telefone where id = :id');
+       dm.query_fornecedores.SQL.Add('UPDATE categorias_gasto set nome_categoria = :nome_categoria where id_categoria = :id_categoria');
        dm.query_fornecedores.ParamByName('nome').Value := edtNome.Text;
-       dm.query_fornecedores.ParamByName('produto').Value := edtProduto.Text;
-       dm.query_fornecedores.ParamByName('endereco').Value := EdtEndereco.Text;
-       dm.query_fornecedores.ParamByName('telefone').Value := edtTel.Text;
 
-       dm.query_fornecedores.ParamByName('id').Value := id;
+       dm.query_fornecedores.ParamByName('id_categoria').Value := id;
        dm.query_fornecedores.ExecSQL;
 
 
@@ -98,7 +85,7 @@ begin
        desabilitarCampos;
 end;
 
-procedure TFrmFornecedores.BtnExcluirClick(Sender: TObject);
+procedure TFrmCategoriaGastos.BtnExcluirClick(Sender: TObject);
 begin
 if MessageDlg('Deseja Excluir o registro?', mtConfirmation, [mbYes, mbNo], 0) = mrYes then
 begin
@@ -113,7 +100,7 @@ begin
 end;
 end;
 
-procedure TFrmFornecedores.btnNovoClick(Sender: TObject);
+procedure TFrmCategoriaGastos.btnNovoClick(Sender: TObject);
 begin
   habilitarCampos;
   dm.tb_fornecedor.Insert;
@@ -122,7 +109,7 @@ begin
   btnExcluir.Enabled := False;
 end;
 
-procedure TFrmFornecedores.btnSalvarClick(Sender: TObject);
+procedure TFrmCategoriaGastos.btnSalvarClick(Sender: TObject);
 begin
        if Trim(EdtNome.Text) = '' then
        begin
@@ -143,16 +130,16 @@ begin
 
 end;
 
-procedure TFrmFornecedores.buscarNome;
+procedure TFrmCategoriaGastos.buscarNome;
 begin
        dm.query_fornecedores.Close;
        dm.query_fornecedores.SQL.Clear;
-       dm.query_fornecedores.SQL.Add('SELECT * from fornecedores where nome LIKE :nome order by nome asc');
-       dm.query_fornecedores.ParamByName('nome').Value := EdtBuscarNome.Text + '%';
+       dm.query_fornecedores.SQL.Add('SELECT * from categorias_gasto where nome_categoria LIKE :nome_categoria order by nome_categoria asc');
+       dm.query_fornecedores.ParamByName('nome_categoria').Value := EdtBuscarNome.Text + '%';
        dm.query_fornecedores.Open;
 end;
 
-procedure TFrmFornecedores.DBGrid1CellClick(Column: TColumn);
+procedure TFrmCategoriaGastos.DBGrid1CellClick(Column: TColumn);
 begin
 habilitarCampos;
   btnEditar.Enabled := true;
@@ -161,62 +148,50 @@ habilitarCampos;
   dm.tb_fornecedor.Edit;
 
 
-  edtNome.Text := dm.query_fornecedores.FieldByName('nome').Value;
+  edtNome.Text := dm.query_fornecedores.FieldByName('nome_categoria').Value;
 
-  edtProduto.Text := dm.query_fornecedores.FieldByName('produto').Value;
 
-  if dm.query_fornecedores.FieldByName('telefone').Value <> null then
-  edtTel.Text := dm.query_fornecedores.FieldByName('telefone').Value;
 
-  if dm.query_fornecedores.FieldByName('endereco').Value <> null then
-  EdtEndereco.Text := dm.query_fornecedores.FieldByName('endereco').Value;
-
-  id := dm.query_fornecedores.FieldByName('id').Value;
+  id := dm.query_fornecedores.FieldByName('id_categoria').Value;
 
 end;
 
-procedure TFrmFornecedores.desabilitarCampos;
+procedure TFrmCategoriaGastos.desabilitarCampos;
 begin
   edtNome.Enabled := false;
-  edtProduto.Enabled := false;
-  EdtEndereco.Enabled := false;
-  EdtTel.Enabled := false;
+
 
 end;
 
-procedure TFrmFornecedores.EdtBuscarNomeChange(Sender: TObject);
+procedure TFrmCategoriaGastos.EdtBuscarNomeChange(Sender: TObject);
 begin
 buscarNome;
 end;
 
-procedure TFrmFornecedores.FormShow(Sender: TObject);
+procedure TFrmCategoriaGastos.FormShow(Sender: TObject);
 begin
 desabilitarCampos;
   dm.tb_fornecedor.Active := true;
   listar;
 end;
 
-procedure TFrmFornecedores.habilitarCampos;
+procedure TFrmCategoriaGastos.habilitarCampos;
 begin
  edtNome.Enabled := true;
-  edtProduto.Enabled := true;
-  EdtEndereco.Enabled := true;
-  EdtTel.Enabled := true;
+
 end;
 
-procedure TFrmFornecedores.limpar;
+procedure TFrmCategoriaGastos.limpar;
 begin
  edtNome.Text := '';
-  edtProduto.Text := '';
-  EdtEndereco.Text := '';
-  EdtTel.Text := '';
+
 end;
 
-procedure TFrmFornecedores.listar;
+procedure TFrmCategoriaGastos.listar;
 begin
        dm.query_fornecedores.Close;
        dm.query_fornecedores.SQL.Clear;
-       dm.query_fornecedores.SQL.Add('SELECT * from fornecedores order by nome asc');
+       dm.query_fornecedores.SQL.Add('SELECT * from categorias_gasto order by nome_categoria asc');
        dm.query_fornecedores.Open;
 end;
 

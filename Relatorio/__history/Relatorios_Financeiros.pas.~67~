@@ -1,0 +1,442 @@
+unit Relatorios_Financeiros;
+
+interface
+
+uses
+  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
+  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Data.DB, Vcl.StdCtrls, Vcl.Grids,
+  Vcl.DBGrids, Vcl.ComCtrls, Vcl.ExtCtrls, ComObj,FireDAC.Comp.Client,System.Math;
+
+type
+  TFrmRelatorios_Financeiros = class(TForm)
+    SaveDialog1: TSaveDialog;
+    pcRelatorios: TPageControl;
+    tsFaturaServico: TTabSheet;
+    Panel1: TPanel;
+    Label1: TLabel;
+    Label2: TLabel;
+    dtpDataInicio: TDateTimePicker;
+    btnFiltrarFaturamento: TButton;
+    btnImprimir: TButton;
+    dtpDataFim: TDateTimePicker;
+    grdFaturamentoServico: TDBGrid;
+    tsPagamentosPendentes: TTabSheet;
+    pnlfiltrosSerivos: TPanel;
+    Label3: TLabel;
+    Label5: TLabel;
+    dtpInicial: TDateTimePicker;
+    dtpFim: TDateTimePicker;
+    btnFiltrarPendente: TButton;
+    btnEnviarLembrete: TButton;
+    grdServicosRealizados: TDBGrid;
+    tsMetodosPagamento: TTabSheet;
+    grdMetodosPagamento: TDBGrid;
+    Panel2: TPanel;
+    Label4: TLabel;
+    Label6: TLabel;
+    dtpInicioMetodo: TDateTimePicker;
+    dtpFimMetodo: TDateTimePicker;
+    BtnFiltrarMetodo: TButton;
+    BtnExportarMetodo: TButton;
+    tsFaturamentoMensal: TTabSheet;
+    Panel3: TPanel;
+    Label7: TLabel;
+    dtpAno: TDateTimePicker;
+    btnFiltrarMes: TButton;
+    grdFaturamentoMensal: TDBGrid;
+    tsLucrosXgastos: TTabSheet;
+    Panel4: TPanel;
+    Label8: TLabel;
+    dtpAnoLucrosGastos: TDateTimePicker;
+    btnFiltrarLucrosGastosClick: TButton;
+    grdLucrosGastos: TDBGrid;
+    tsGastos: TTabSheet;
+    Panel5: TPanel;
+    Label9: TLabel;
+    dtpAnoMesLucrosGastos: TDateTimePicker;
+    btnFiltrarGastosClick: TButton;
+    grdGastos: TDBGrid;
+    procedure btnFiltrarFaturamentoClick(Sender: TObject);
+    procedure btnImprimirClick(Sender: TObject);
+    procedure btnFiltrarPendenteClick(Sender: TObject);
+    procedure btnEnviarLembreteClick(Sender: TObject);
+    procedure BtnFiltrarMetodoClick(Sender: TObject);
+    procedure BtnExportarMetodoClick(Sender: TObject);
+    procedure btnFiltrarMesClick(Sender: TObject);
+    procedure btnFiltrarLucrosGastosClickClick(Sender: TObject);
+    procedure btnFiltrarGastosClickClick(Sender: TObject);
+  private
+      procedure ExportarParaCSV(const FileName: string);
+      procedure carregarCombobox(
+          Combo: TComboBox;          // Combobox que será preenchido
+          Query: TFDQuery;           // Query com os dados
+          NomeColuna: string;        // Nome da coluna a ser carregada
+          AdicionarItemVazio: Boolean = True // Opcional: adiciona item em branco no início
+        );
+  public
+    { Public declarations }
+  end;
+
+var
+  FrmRelatorios_Financeiros: TFrmRelatorios_Financeiros;
+
+implementation
+
+{$R *.dfm}
+
+uses Modulo, Agendamento;
+
+procedure TFrmRelatorios_Financeiros.btnEnviarLembreteClick(Sender: TObject);
+var
+  TelefoneCliente, NomeCliente, Mensagem: string; // Renomeei para maior clareza
+  ValorPendenteFloat: Currency; // Para pegar o valor como float/currency
+begin
+  if not dm.query_Pagamentos_Pendentes.IsEmpty then
+  begin
+    // Pegue os dados do registro atual na query
+    NomeCliente := dm.query_Pagamentos_Pendentes.FieldByName('Cliente').AsString; // Use o novo alias
+    TelefoneCliente := dm.query_Pagamentos_Pendentes.FieldByName('TelefoneCliente').AsString; // Use o novo alias
+
+    // Pegue o valor pendente como Currency/Float para formatar corretamente
+    ValorPendenteFloat := dm.query_Pagamentos_Pendentes.FieldByName('ValorPendente').AsCurrency;
+
+    // Mensagem a ser enviada
+    Mensagem := 'Olá ' + NomeCliente +
+      '! Você possui um pagamento pendente de R$ ' +
+      FormatFloat('0.00', ValorPendenteFloat) + // Garante duas casas decimais
+      '. Por favor, regularize. Obrigado!';
+
+    // Verifique se o telefone não está vazio antes de tentar enviar
+    if TelefoneCliente <> '' then
+    begin
+      frmAgendamento.EnviarMensagemWhatsApp(TelefoneCliente, Mensagem);
+      MessageDlg('Lembrete de pagamento enviado para ' + NomeCliente + '.', mtInformation, [mbOK], 0);
+    end
+    else
+    begin
+      MessageDlg('Cliente ' + NomeCliente + ' não possui telefone cadastrado ou o telefone está vazio. Lembrete NÃO enviado.', mtWarning, [mbOK], 0);
+    end;
+  end
+  else
+  begin
+    MessageDlg('Nenhum pagamento pendente selecionado ou a lista está vazia.', mtInformation, [mbOK], 0);
+  end;
+end;
+
+procedure TFrmRelatorios_Financeiros.BtnExportarMetodoClick(Sender: TObject);
+begin
+  SaveDialog1.Filter := 'Arquivos CSV|*.csv';
+  if SaveDialog1.Execute then
+    ExportarParaCSV(SaveDialog1.FileName);
+end;
+
+procedure TFrmRelatorios_Financeiros.btnFiltrarFaturamentoClick(
+  Sender: TObject);
+begin
+  dm.query_Faturamento_Servico.Close;
+  dm.query_Faturamento_Servico.SQL.Clear;
+  dm.query_Faturamento_Servico.SQL.Text :=
+       ' SELECT' +
+       ' s.nomeServico AS Servico, ' +
+       ' COUNT(DISTINCT s.idAgendamento) AS TotalAgendamentos, ' +
+       ' SUM(s.preco - s.desconto) AS TotalLiquido,' +
+       '  COALESCE(SUM(p.valor_pago), 0) AS TotalRecebido,'+
+       '   (SUM(s.preco - s.desconto) - COALESCE(SUM(p.valor_pago), 0)) AS Pendente '+
+        'FROM agendamento_servicos s ' +
+        'JOIN agendamentos a ON s.idAgendamento = a.id ' + // Aqui está o JOIN necessário
+        'LEFT JOIN agendamento_pagamento p ON s.idAgendamento = p.idAgendamento ' +
+        'WHERE a.data BETWEEN :DataInicio AND :DataFim ' +
+        'GROUP BY s.nomeServico';
+
+  dm.query_Faturamento_Servico.ParamByName('DataInicio').AsDate := dtpDataInicio.Date;
+  dm.query_Faturamento_Servico.ParamByName('DataFim').AsDate := dtpDataFim.Date;
+  dm.query_Faturamento_Servico.Open;
+end;
+
+procedure TFrmRelatorios_Financeiros.btnFiltrarGastosClickClick(
+  Sender: TObject);
+var
+  AnoSelecionado: string; // Para o ano (como string, conforme sua preferência)
+  MesSelecionado: string; // Para o mês (como string formatada, conforme sua preferência)
+  IdCategoriaFiltro: Integer;
+begin
+  // 1. Obtenção do Ano e Mês do DateTimePicker
+  // IMPORTANTE: dtpMesAnoRelGastos deve ser o seu DateTimePicker na aba "Relatório de Gastos"
+  // (O mesmo que configuramos para exibir MM/yyyy ou yyyy)
+  AnoSelecionado := FormatDateTime('yyyy', dtpMesAnoRelGastos.Date);
+  MesSelecionado := FormatDateTime('mm', dtpMesAnoRelGastos.Date); // Pega o mês formatado como string ("07")
+
+  // 2. Preparação da Query
+  dm.query_gastosFiltro.Close; // Fecha a query antes de definir o novo SQL
+  dm.query_gastosFiltro.SQL.Clear;
+  dm.query_gastosFiltro.Params.Clear; // Limpa os parâmetros
+
+  // 3. Define a SQL para o relatório de gastos com filtro por Mês e Ano, e Categoria
+  dm.query_gastosFiltro.SQL.Text :=
+    'SELECT ' +
+    '    cg.nome_categoria AS Categoria, ' +
+    '    SUM(g.valor) AS Total_Gasto_Por_Categoria ' +
+    'FROM ' +
+    '    gastos g ' +
+    'LEFT JOIN ' +
+    '    categorias_gasto cg ON g.id_categoria = cg.id_categoria ' +
+    'WHERE ' +
+    '    YEAR(g.data_gasto) = :Ano AND ' + // Filtro por Ano
+    '    MONTH(g.data_gasto) = :Mes AND ' + // Filtro por Mês
+    '    (:IdCategoria IS NULL OR g.id_categoria = :IdCategoria) ' +
+    'GROUP BY ' +
+    '    cg.nome_categoria ' +
+    'ORDER BY ' +
+    '    cg.nome_categoria;';
+
+  // 4. Atribui os parâmetros (Ano e Mês como String, IdCategoria como Integer)
+  dm.query_gastosFiltro.ParamByName('Ano').AsString := AnoSelecionado;
+  dm.query_gastosFiltro.ParamByName('Mes').AsString := MesSelecionado;
+
+  // Atribui o parâmetro da categoria
+  if cbCategoriaRelGastos.ItemIndex > 0 then // Se não for "Todas as Categorias"
+  begin
+    IdCategoriaFiltro := Integer(cbCategoriaRelGastos.Items.Objects[cbCategoriaRelGastos.ItemIndex]);
+    dm.query_gastosFiltro.ParamByName('IdCategoria').AsInteger := IdCategoriaFiltro;
+  end
+  else
+  begin
+    dm.query_gastosFiltro.ParamByName('IdCategoria').Clear; // Se "Todas as Categorias" selecionada
+  end;
+
+  // 5. Abre a Query e vincula ao grid (já configurado no DFM)
+  dm.query_gastosFiltro.Open;
+end;
+end;
+
+
+procedure TFrmRelatorios_Financeiros.btnFiltrarLucrosGastosClickClick(
+  Sender: TObject);
+var
+  AnoSelecionado: string; // Mantido como string para ser compatível com btnFiltrarMesClick
+begin
+  // Obtém o ano como string, formatado para 'yyyy'
+  // IMPORTANTE: Use dtpAnoLucrosGastos aqui, que é o seu DateTimePicker para esta aba.
+  AnoSelecionado := FormatDateTime('yyyy', dtpAnoLucrosGastos.Date);
+
+  dm.query_LucrosGastos.Close; // Fecha a query antes de executar
+  dm.query_LucrosGastos.SQL.Clear; // Limpa o SQL existente
+  dm.query_LucrosGastos.Params.Clear; // <<< IMPORTANTE: Limpa todos os parâmetros anteriores para evitar conflitos
+
+  // <<< ATENÇÃO: COPIE E COLE ESTA STRING SQL INTEIRA DIRETAMENTE NO SEU CÓDIGO >>>
+  // Isso garante que não haja caracteres ocultos ou erros de digitação no nome do parâmetro.
+  dm.query_LucrosGastos.SQL.Text :=
+    'SELECT ' +
+    '    AllMonths.Mes_Ano, ' +
+    '    COALESCE(Revenue.Receita_Liquida_Servicos, 0) AS Receita_Liquida, ' +
+    '    COALESCE(Expenses.Total_Gastos, 0) AS Total_Gastos, ' +
+    '    (COALESCE(Revenue.Receita_Liquida_Servicos, 0) - COALESCE(Expenses.Total_Gastos, 0)) AS Lucro_Liquido ' +
+    'FROM ' +
+    '    ( ' +
+    '        SELECT DATE_FORMAT(data, ''%Y-%m'') AS Mes_Ano FROM agendamentos ' +
+    '        WHERE YEAR(data) = :Ano ' + // Verifique a grafia exata de ":Ano" aqui
+    '        UNION ' +
+    '        SELECT DATE_FORMAT(data_gasto, ''%Y-%m'') AS Mes_Ano FROM gastos ' +
+    '        WHERE YEAR(data_gasto) = :Ano ' + // Verifique a grafia exata de ":Ano" aqui
+    '    ) AS AllMonths ' +
+    'LEFT JOIN ' +
+    '    ( ' +
+    '        SELECT ' +
+    '            DATE_FORMAT(a.data, ''%Y-%m'') AS Mes_Ano, ' +
+    '            SUM(ags.preco - COALESCE(ags.desconto, 0)) AS Receita_Liquida_Servicos ' +
+    '        FROM ' +
+    '            agendamentos AS a ' +
+    '        LEFT JOIN ' +
+    '            agendamento_servicos AS ags ON ags.idAgendamento = a.id ' +
+    '        WHERE YEAR(a.data) = :Ano ' + // Verifique a grafia exata de ":Ano" aqui
+    '        GROUP BY ' +
+    '            Mes_Ano ' +
+    '    ) AS Revenue ON AllMonths.Mes_Ano = Revenue.Mes_Ano ' +
+    'LEFT JOIN ' +
+    '    ( ' +
+    '        SELECT ' +
+    '            DATE_FORMAT(data_gasto, ''%Y-%m'') AS Mes_Ano, ' +
+    '            SUM(valor) AS Total_Gastos ' +
+    '        FROM ' +
+    '            gastos ' +
+    '        WHERE YEAR(data_gasto) = :Ano ' + // Verifique a grafia exata de ":Ano" aqui
+    '        GROUP BY ' +
+    '            Mes_Ano ' +
+    '    ) AS Expenses ON AllMonths.Mes_Ano = Expenses.Mes_Ano ' +
+    'ORDER BY ' +
+    '    AllMonths.Mes_Ano DESC;';
+
+  // Atribui o parâmetro do Ano como String, compatível com btnFiltrarMesClick
+  dm.query_LucrosGastos.ParamByName('Ano').AsString := AnoSelecionado;
+
+  dm.query_LucrosGastos.Open; // Abre a query para gerar o relatório
+end;
+
+procedure TFrmRelatorios_Financeiros.btnFiltrarMesClick(Sender: TObject);
+var
+  Ano: string;
+begin
+  Ano := FormatDateTime('yyyy', dtpAno.Date);
+
+  dm.query_Faturamento_Mensal.Close;
+  dm.query_Faturamento_Mensal.SQL.Text :=
+  'SELECT ' +
+  '  DATE_FORMAT(a.data, ''%Y-%m'') AS Mes_Ano, ' +
+  '  COALESCE(SUM(serv.total_liquido), 0) AS Total_Liquido, ' +
+  '  COALESCE(SUM(pag.total_pago), 0) AS Total_Recebido, ' +
+  '  COALESCE(SUM(serv.total_liquido), 0) - COALESCE(SUM(pag.total_pago), 0) AS Diferenca ' +
+  'FROM agendamentos a ' +
+  'LEFT JOIN ( ' +
+  '  SELECT idAgendamento, SUM(preco - desconto) AS total_liquido ' +
+  '  FROM agendamento_servicos ' +
+  '  GROUP BY idAgendamento ' +
+  ') serv ON serv.idAgendamento = a.id ' +
+  'LEFT JOIN ( ' +
+  '  SELECT idAgendamento, SUM(valor_pago) AS total_pago ' +
+  '  FROM agendamento_pagamento ' +
+  '  GROUP BY idAgendamento ' +
+  ') pag ON pag.idAgendamento = a.id ' +
+  'WHERE YEAR(a.data) = :Ano ' +
+  'GROUP BY DATE_FORMAT(a.data, ''%Y-%m'') ' +
+  'ORDER BY Mes_Ano DESC';
+
+  dm.query_Faturamento_Mensal.ParamByName('Ano').AsString := Ano;
+  dm.query_Faturamento_Mensal.Open;
+end;
+
+procedure TFrmRelatorios_Financeiros.BtnFiltrarMetodoClick(Sender: TObject);
+begin
+  dm.query_Metodos_Pagamento.Close;
+  dm.query_Metodos_Pagamento.SQL.Text :=
+    'SELECT tipo_pagamento AS Metodo, COUNT(*) AS TotalTransacoes, SUM(valor_pago) AS TotalRecebido, AVG(parcemento) AS MediaParcelas ' +
+    'FROM agendamento_pagamento ' +
+    'WHERE data_pagamento BETWEEN :DataInicio AND :DataFim ' +
+    'GROUP BY Metodo';
+
+  dm.query_Metodos_Pagamento.ParamByName('DataInicio').AsDate := dtpInicioMetodo.Date;
+  dm.query_Metodos_Pagamento.ParamByName('DataFim').AsDate := dtpFimMetodo.Date;
+  dm.query_Metodos_Pagamento.Open;
+end;
+
+procedure TFrmRelatorios_Financeiros.btnFiltrarPendenteClick(Sender: TObject);
+begin
+  dm.query_Pagamentos_Pendentes.Close;
+  dm.query_Pagamentos_Pendentes.SQL.Text :=
+
+'SELECT ' +
+    '  a.data AS DataAgendamento, ' +
+    '  c.nome AS Cliente, ' +
+    '  c.telefone AS TelefoneCliente, ' + // <<< ADICIONADO AQUI
+    '  a.Funcionario, ' +
+    '  SUM(ags.preco - COALESCE(ags.desconto, 0)) AS ValorTotalServicos, ' + // <<< CORRIGIDO AQUI
+    '  COALESCE(SUM(ap.valor_pago), 0) AS ValorTotalPago, ' +
+    '  (SUM(ags.preco - COALESCE(ags.desconto, 0)) - COALESCE(SUM(ap.valor_pago), 0)) AS ValorPendente, ' + // <<< CORRIGIDO AQUI TAMBÉM
+    '  GROUP_CONCAT(ags.nomeServico SEPARATOR ''; '') AS ServicosAgendados ' +
+    'FROM ' +
+    '  agendamentos AS a ' +
+    'JOIN ' +
+    '  cliente AS c ON a.cliente_id = c.id ' +
+    'LEFT JOIN ' +
+    '  agendamento_servicos AS ags ON a.id = ags.idAgendamento ' +
+    'LEFT JOIN ' +
+    '  agendamento_pagamento AS ap ON a.id = ap.idAgendamento ' +
+    'WHERE ' +
+    '  a.data BETWEEN :DataInicio AND :DataFim ' +
+    'GROUP BY ' +
+    '  a.id, a.data, c.nome, a.Funcionario ' +
+    'HAVING ' +
+    '  (SUM(ags.preco - COALESCE(ags.desconto, 0)) - COALESCE(SUM(ap.valor_pago), 0)) > 0 ' +
+    'ORDER BY ' +
+    '  a.data, c.nome;';
+
+
+
+  dm.query_Pagamentos_Pendentes.ParamByName('DataInicio').AsDate := dtpInicial.Date;
+  dm.query_Pagamentos_Pendentes.ParamByName('DataFim').AsDate := dtpFim.Date;
+  dm.query_Pagamentos_Pendentes.Open;
+end;
+
+procedure TFrmRelatorios_Financeiros.btnImprimirClick(Sender: TObject);
+begin
+  SaveDialog1.Filter := 'Arquivos CSV|*.csv';
+  if SaveDialog1.Execute then
+    ExportarParaCSV(SaveDialog1.FileName);
+end;
+
+procedure TFrmRelatorios_Financeiros.carregarCombobox(Combo: TComboBox;
+  Query: TFDQuery; NomeColuna: string; AdicionarItemVazio: Boolean);
+begin
+  Combo.Items.BeginUpdate;
+  try
+    try
+      Combo.Clear;
+
+      // Verifica se a coluna existe na query
+      if Query.FindField(NomeColuna) = nil then
+        raise Exception.Create('Coluna "' + NomeColuna + '" não existe na query!');
+
+      // Adiciona item vazio
+      if AdicionarItemVazio then
+        Combo.Items.Add('');
+
+      // Executa query se necessário
+      if not Query.Active then
+        Query.Open;
+
+      // Carrega dados
+      Query.First;
+      while not Query.EOF do
+      begin
+        Combo.Items.Add(Query.FieldByName(NomeColuna).AsString);
+        Query.Next;
+      end;
+
+      // Configura seleção padrão
+      Combo.ItemIndex := IfThen(AdicionarItemVazio, 0, -1);
+
+    except
+      on E: Exception do
+        ShowMessage('Erro ao carregar combobox: ' + E.Message);
+    end;
+  finally
+    Combo.Items.EndUpdate;
+    Query.Close; // Ajuste conforme sua necessidade
+  end;
+end;
+
+procedure TFrmRelatorios_Financeiros.ExportarParaCSV(const FileName: string);
+var
+  F: TextFile;
+  i: Integer;
+begin
+  AssignFile(F, FileName);
+  Rewrite(F);
+
+  // Escrever cabeçalhos
+  for i := 0 to dm.query_agendamentodiario.FieldCount - 1 do
+  begin
+    Write(F, dm.query_agendamentodiario.Fields[i].FieldName);
+    if i < dm.query_agendamentodiario.FieldCount - 1 then
+      Write(F, ';');
+  end;
+  Writeln(F);
+
+  // Escrever dados
+  dm.query_agendamentodiario.First;
+  while not dm.query_agendamentodiario.Eof do
+  begin
+    for i := 0 to dm.query_agendamentodiario.FieldCount - 1 do
+    begin
+      Write(F, dm.query_agendamentodiario.Fields[i].AsString);
+      if i < dm.query_agendamentodiario.FieldCount - 1 then
+        Write(F, ';');
+    end;
+    Writeln(F);
+    dm.query_agendamentodiario.Next;
+  end;
+
+  CloseFile(F);
+  ShowMessage('Exportado com sucesso!');
+end;
+
+end.

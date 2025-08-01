@@ -16,7 +16,7 @@ object FrmRelatorios_Financeiros: TFrmRelatorios_Financeiros
     Top = 0
     Width = 1277
     Height = 695
-    ActivePage = tsMetodosPagamento
+    ActivePage = tsGastos
     Align = alClient
     TabOrder = 0
     object tsFaturaServico: TTabSheet
@@ -296,6 +296,112 @@ object FrmRelatorios_Financeiros: TFrmRelatorios_Financeiros
         Height = 625
         Align = alClient
         DataSource = dm.DsFaturamentoMensal
+        TabOrder = 1
+        TitleFont.Charset = DEFAULT_CHARSET
+        TitleFont.Color = clWindowText
+        TitleFont.Height = -12
+        TitleFont.Name = 'Segoe UI'
+        TitleFont.Style = []
+      end
+    end
+    object tsLucrosXgastos: TTabSheet
+      Caption = 'Lucros X Gastos'
+      ImageIndex = 4
+      object Panel4: TPanel
+        Left = 0
+        Top = 0
+        Width = 1269
+        Height = 40
+        Align = alTop
+        TabOrder = 0
+        ExplicitTop = 8
+        object Label8: TLabel
+          Left = 73
+          Top = 11
+          Width = 25
+          Height = 15
+          Caption = 'Ano:'
+        end
+        object dtpAnoLucrosGastos: TDateTimePicker
+          Left = 104
+          Top = 11
+          Width = 186
+          Height = 23
+          Date = 45786.000000000000000000
+          Time = 0.981428900464379700
+          TabOrder = 0
+        end
+        object btnFiltrarLucrosGastosClick: TButton
+          AlignWithMargins = True
+          Left = 325
+          Top = 2
+          Width = 108
+          Height = 32
+          Caption = 'Filtrar'
+          TabOrder = 1
+          OnClick = btnFiltrarLucrosGastosClickClick
+        end
+      end
+      object grdLucrosGastos: TDBGrid
+        Left = 0
+        Top = 40
+        Width = 1269
+        Height = 625
+        Align = alClient
+        DataSource = dm.DsLucrosGastos
+        TabOrder = 1
+        TitleFont.Charset = DEFAULT_CHARSET
+        TitleFont.Color = clWindowText
+        TitleFont.Height = -12
+        TitleFont.Name = 'Segoe UI'
+        TitleFont.Style = []
+      end
+    end
+    object tsGastos: TTabSheet
+      Caption = 'Gastos'
+      ImageIndex = 5
+      object Panel5: TPanel
+        Left = 0
+        Top = 0
+        Width = 1269
+        Height = 40
+        Align = alTop
+        TabOrder = 0
+        ExplicitTop = 8
+        object Label9: TLabel
+          Left = 73
+          Top = 11
+          Width = 25
+          Height = 15
+          Caption = 'Ano:'
+        end
+        object dtpAnoMesLucrosGastos: TDateTimePicker
+          Left = 104
+          Top = 11
+          Width = 186
+          Height = 23
+          Date = 45786.000000000000000000
+          Time = 0.981428900464379700
+          TabOrder = 0
+        end
+        object btnFiltrarGastosClick: TButton
+          AlignWithMargins = True
+          Left = 325
+          Top = 2
+          Width = 108
+          Height = 32
+          Caption = 'Filtrar'
+          TabOrder = 1
+          OnClick = btnFiltrarGastosClickClick
+        end
+      end
+      object grdGastos: TDBGrid
+        Left = 0
+        Top = 40
+        Width = 1269
+        Height = 625
+        Align = alClient
+        DataSource = dm.DsGastosFiltro
         TabOrder = 1
         TitleFont.Charset = DEFAULT_CHARSET
         TitleFont.Color = clWindowText

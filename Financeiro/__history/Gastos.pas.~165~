@@ -1,0 +1,341 @@
+unit Gastos;
+
+interface
+
+uses
+  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
+  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Data.DB, Vcl.StdCtrls, Vcl.WinXPickers,
+  Vcl.Grids, Vcl.DBGrids, Vcl.Buttons, Vcl.ExtCtrls, FireDAC.Comp.Client, FireDAC.Comp.DataSet;
+
+type
+  TFrmGastos = class(TForm)
+    Label1: TLabel; // Para DataGasto
+    Label2: TLabel; // Para EdtDescricao
+    btnNovo: TSpeedButton;
+    btnSalvar: TSpeedButton;
+    BtnEditar: TSpeedButton;
+    BtnExcluir: TSpeedButton;
+    EdtBuscarNome: TEdit; // Para futura funcionalidade de busca (manter por enquanto)
+    EdtDescricao: TEdit;
+    DBGrid1: TDBGrid; // Este DBGrid já está vinculado a dm.DsGastos no DFM
+    Label3: TLabel; // Para edtValor
+    Label4: TLabel; // Para cbCategoria
+    Label5: TLabel; // Para EtBuscarNome (se mantiver)
+    edtValor: TEdit;
+    DateGasto: TDatePicker;
+    cbCategoria: TComboBox; // Botão para abrir cadastro de categorias (se existir no DFM)
+
+    // Eventos que precisam ser vinculados no DFM para seus respectivos componentes
+    procedure FormCreate(Sender: TObject);
+    procedure FormShow(Sender: TObject);
+    procedure BtnNovoClick(Sender: TObject);
+    procedure BtnSalvarClick(Sender: TObject);
+    procedure BtnEditarClick(Sender: TObject); // Corrigido abaixo
+    procedure BtnExcluirClick(Sender: TObject);
+    procedure DBGrid1CellClick(Column: TColumn); // Corrigido abaixo
+    procedure EdtValorKeyPress(Sender: TObject; var Key: Char);
+    procedure CbCategoriaDropDown(Sender: TObject);
+    // Se você tiver um botão de cancelar, adicione e implemente:
+    // procedure BtnCancelarClick(Sender: TObject);
+
+  private
+    // Métodos auxiliares
+    procedure LimparCampos;
+    procedure HabilitarCampos(Habilitar: Boolean); // Corrigido abaixo
+    procedure CarregarGastos; // Carrega os dados de gastos no grid
+    procedure CarregarCategoriasNoComboBox; // Preenche o ComboBox de categorias
+    procedure associarCampos;
+    //procedure desabilitarCampos;
+  public
+    { Public declarations }
+  end;
+
+var
+  FrmGastos: TFrmGastos;
+  id: string;
+
+implementation
+
+{$R *.dfm}
+
+uses Modulo; // Modulo para acesso ao DataModule, UCategoriasGasto para o form de categorias
+
+// --- Implementações das procedures auxiliares ---
+
+procedure TFrmGastos.LimparCampos;
+begin
+  DateGasto.Date := Date; // Define a data atual por padrão
+  EdtDescricao.Clear;
+  EdtValor.Clear;
+  cbCategoria.ItemIndex := -1; // Limpa a seleção do ComboBox
+end;
+
+// Lógica de HabilitarCampos para controlar os botões
+procedure TFrmGastos.HabilitarCampos(Habilitar: Boolean);
+begin
+  DateGasto.Enabled := true;
+  EdtDescricao.Enabled := true;
+  edtValor.Enabled := true;
+  cbCategoria.Enabled := true;
+end;
+
+// --- Implementações das procedures de carregamento de dados (queries) ---
+
+procedure TFrmGastos.CarregarGastos;
+begin
+  dm.query_gastos.Close;
+  dm.query_gastos.SQL.Text :=
+    'SELECT g.id_gasto, g.data_gasto, g.descricao, g.valor, g.id_categoria, ' +
+    'cg.nome_categoria AS categoria_nome ' +
+    'FROM gastos g ' +
+    'LEFT JOIN categorias_gasto cg ON g.id_categoria = cg.id_categoria ' +
+    'ORDER BY g.data_gasto DESC, g.id_gasto DESC';
+  dm.query_gastos.Open;
+end;
+
+// Ajustado para usar dm.query_categorias_gasto
+procedure TFrmGastos.CarregarCategoriasNoComboBox;
+begin
+  cbCategoria.Items.Clear;
+  dm.query_fornecedores.Close;
+  dm.query_fornecedores.SQL.Text := 'SELECT id_categoria, nome_categoria FROM categorias_gasto ORDER BY nome_categoria';
+  dm.query_fornecedores.Open;
+
+  while not dm.query_fornecedores.Eof do
+  begin
+    cbCategoria.Items.AddObject(
+      dm.query_fornecedores.FieldByName('nome_categoria').AsString,
+      TObject(dm.query_fornecedores.FieldByName('id_categoria').AsInteger)
+    );
+    dm.query_fornecedores.Next;
+  end;
+  dm.query_fornecedores.Close;
+end;
+
+// --- Implementações dos eventos do formulário ---
+
+procedure TFrmGastos.FormCreate(Sender: TObject);
+begin
+  // O DBGrid já está diretamente vinculado a dm.DsGastos no DFM.
+  HabilitarCampos(False);
+  LimparCampos;
+end;
+
+procedure TFrmGastos.FormShow(Sender: TObject);
+begin
+  dm.tb_gastos.Active := true;
+  CarregarCategoriasNoComboBox;
+  CarregarGastos;
+end;
+
+procedure TFrmGastos.BtnNovoClick(Sender: TObject);
+begin
+    if dm.tb_gastos.State in [dsEdit] then
+    dm.tb_gastos.Cancel;
+
+  LimparCampos;
+  dm.tb_gastos.Append;
+  DateGasto.SetFocus;
+
+  btnSalvar.Enabled := true;
+  btnEditar.Enabled := False;
+  btnExcluir.Enabled := False;
+end;
+
+procedure TFrmGastos.associarCampos;
+var
+  ValorStr: string;
+  ValorCurrency: Currency;
+  LFormatSettings: TFormatSettings;
+begin
+  dm.tb_gastos.FieldByName('data_gasto').Value := DateGasto.Date;
+  dm.tb_gastos.FieldByName('descricao').Value := EdtDescricao.Text;
+
+  if cbCategoria.ItemIndex >= 0 then
+    dm.tb_gastos.FieldByName('id_categoria').AsInteger := Integer(cbCategoria.Items.Objects[cbCategoria.ItemIndex]);
+
+  ValorStr := edtValor.Text;
+  // Obtém as configurações de formato padrão do sistema
+  GetLocaleFormatSettings(LOCALE_USER_DEFAULT, LFormatSettings);
+  // Define o separador decimal para ponto, ignorando a configuração regional, para a conversão
+  LFormatSettings.DecimalSeparator := '.';
+  // Opcional: remove o separador de milhar para evitar problemas na conversão
+  LFormatSettings.ThousandSeparator := ' ';
+
+  try
+    // Converte a string (com ponto) para Currency usando as configurações modificadas
+    ValorCurrency := StrToCurr(ValorStr, LFormatSettings);
+    dm.tb_gastos.FieldByName('valor').AsCurrency := ValorCurrency;
+  except
+    on E: Exception do
+    begin
+      MessageDlg('Erro ao converter o preço. Verifique o formato do valor. Detalhes: ' + E.Message, mtError, [mbOK], 0);
+      Abort;
+    end;
+  end;
+end;
+
+procedure TFrmGastos.BtnEditarClick(Sender: TObject);
+begin
+  if Trim(EdtDescricao.Text) = '' then
+  begin
+    MessageDlg('Preencha o descricao', mtInformation, [mbOK], 0);
+    EdtDescricao.SetFocus;
+    Exit;
+  end;
+
+  // Associar os campos do formulário aos campos da tabela
+  dm.tb_cliente.close;
+  dm.tb_cliente.sql.Clear;
+  dm.tb_cliente.sql.add('UPDATE gastos set data_gasto = :data_gasto, descricao = :descricao, valor = :valor, id_categoria = :id_categoria  where id_gasto = :id_gasto');
+  dm.tb_cliente.FieldByName('descricao').Value := EdtDescricao.Text;
+  dm.tb_cliente.FieldByName('data_gasto').Value := DateGasto.Date ;
+  dm.tb_cliente.FieldByName('valor').Value := edtValor.Text;
+  dm.tb_cliente.FieldByName('id_categoria').Value := cbCategoria.Text;
+
+  dm.tb_cliente.FieldByName('id_gasto').Value := id;
+  dm.tb_cliente.ExecSQL;
+
+  MessageDlg('Editado com sucesso.', mtInformation, [mbOK], 0);
+
+  // Limpa e desabilita campos, e atualiza a lista
+  LimparCampos;
+  btnEditar.Enabled := False;
+  btnExcluir.Enabled := False;
+  CarregarGastos;
+end;
+
+// Esta procedure é responsável por SALVAR tanto INSERÇÕES quanto EDIÇÕES
+procedure TFrmGastos.BtnSalvarClick(Sender: TObject);
+var
+  valorDigitado: Double;
+  idCategoriaSelecionada: Integer;
+begin
+  // --- Validação dos Campos ---
+  if Trim(EdtDescricao.Text) = '' then
+  begin
+    ShowMessage('A descrição do gasto não pode ser vazia.');
+    EdtDescricao.SetFocus;
+    Exit;
+  end;
+  if not TryStrToFloat(StringReplace(edtValor.Text, ',', '.', [rfReplaceAll]), valorDigitado) then
+  begin
+    ShowMessage('Valor inválido. Por favor, insira um número válido para o valor.');
+    edtValor.SetFocus;
+    Exit;
+  end;
+  if cbCategoria.ItemIndex = -1 then
+  begin
+    ShowMessage('Selecione uma categoria para o gasto.');
+    cbCategoria.SetFocus;
+    Exit;
+  end;
+
+  associarCampos;
+  dm.tb_gastos.Post;
+
+  MessageDlg('Salvo com sucesso.', mtInformation, [mbOK], 0);
+
+  LimparCampos;          // Chama o novo procedimento
+  btnSalvar.Enabled := False;
+  btnEditar.Enabled := False;
+  btnExcluir.Enabled := False;
+  CarregarGastos;
+end;
+
+
+procedure TFrmGastos.BtnExcluirClick(Sender: TObject);
+begin
+  if not dm.query_gastos.IsEmpty then
+  begin
+    if MessageDlg('Tem certeza que deseja excluir este gasto?', mtConfirmation, [mbYes, mbNo], 0) = mrYes then
+    begin
+      try
+        dm.query_gastos.Delete; // Deleta o registro atual do dataset
+        ShowMessage('Gasto excluído com sucesso!');
+        LimparCampos;
+        HabilitarCampos(False);
+        CarregarGastos;
+      except
+        on E: Exception do
+          ShowMessage('Erro ao excluir o gasto: ' + E.Message);
+      end;
+    end;
+  end else begin
+    ShowMessage('Não há gastos para excluir. Selecione um gasto na lista.');
+  end;
+end;
+
+procedure TFrmGastos.DBGrid1CellClick(Column: TColumn);
+var
+  ValorPreco: Currency;
+  LFormatSettings: TFormatSettings; // Declare uma variável para as configurações de formato
+begin
+  // Cancela a inserção se estiver em modo Insert
+  if dm.tb_gastos.State in [dsInsert] then
+    dm.tb_gastos.Cancel;
+
+  // Habilita os campos e botões
+  habilitarCampos(true);
+  btnEditar.Enabled := True;
+  btnExcluir.Enabled := True;
+
+  // Coloca o dataset em modo de edição (é uma boa prática fazer isso antes de carregar os valores)
+  dm.tb_gastos.Edit;
+
+  // Carrega os valores do registro selecionado no DBGrid para os campos de edição
+  DateGasto.Date := dm.query_gastos.FieldByName('data_gasto').AsDateTime;
+  EdtDescricao.Text := dm.query_gastos.FieldByName('descricao').AsString;
+  cbCategoria.text :=  dm.query_gastos.FieldByName('id_categoria').Value;
+
+  // --- CORREÇÃO PARA FORÇAR PONTO DECIMAL NA EXIBIÇÃO DO PREÇO ---
+  ValorPreco := dm.query_gastos.FieldByName('valor').AsCurrency;
+
+  // Obtém as configurações de formato padrão do sistema
+  GetLocaleFormatSettings(LOCALE_USER_DEFAULT, LFormatSettings);
+  // Define o separador decimal para ponto, ignorando a configuração regional
+  LFormatSettings.DecimalSeparator := '.';
+  // Opcional: remove o separador de milhar para evitar conflitos na entrada
+  LFormatSettings.ThousandSeparator := ' ';
+
+  // Formata o valor Currency para string usando FloatToStrF com as configurações modificadas
+  edtValor.Text := FloatToStrF(ValorPreco, ffFixed, 15, 2, LFormatSettings);
+  // ----------------------------------------------------------------
+
+  // Carrega a duração em meses
+
+  id := dm.query_gastos.FieldByName('id_gasto').AsString;
+
+end;
+
+
+
+
+
+procedure TFrmGastos.EdtValorKeyPress(Sender: TObject; var Key: Char);
+begin
+  // Permite apenas números, ponto e backspace
+  if not (Key in ['0'..'9', '.', #8]) then
+  begin
+    Key := #0;
+    Exit;
+  end;
+
+  // Impede múltiplos pontos
+  if (Key = '.') and (Pos('.', (Sender as TEdit).Text) > 0) then
+  begin
+    Key := #0;
+    Exit;
+  end;
+
+  // Converte vírgula para ponto se for digitada
+  if Key = ',' then
+    Key := '.';
+end;
+
+procedure TFrmGastos.CbCategoriaDropDown(Sender: TObject);
+begin
+  CarregarCategoriasNoComboBox;
+end;
+
+end.

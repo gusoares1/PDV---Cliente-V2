@@ -31,7 +31,6 @@ object frmMenu: TfrmMenu
     ShowCaption = False
     ShowHint = False
     TabOrder = 0
-    ExplicitLeft = 568
     object Label1: TLabel
       Left = 32
       Top = 35
@@ -445,6 +444,17 @@ object frmMenu: TfrmMenu
       object Formadepagamento1: TMenuItem
         Caption = 'Forma de pagamento'
         OnClick = Formadepagamento1Click
+      end
+      object categoriadegastos1: TMenuItem
+        Caption = 'categoria de gastos'
+        OnClick = categoriadegastos1Click
+      end
+    end
+    object financeiro1: TMenuItem
+      Caption = 'Financeiro'
+      object Financeiro2: TMenuItem
+        Caption = 'Financeiro'
+        OnClick = Financeiro2Click
       end
     end
     object Agendamento1: TMenuItem
